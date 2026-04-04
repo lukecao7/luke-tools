@@ -206,70 +206,42 @@ def format_money(value: float | int | None) -> str:
 
 
 def build_home(companies: dict, cases: dict, people: dict, concepts: dict, letters: list[str]) -> str:
-    featured_cards = []
-    for case in cases.values():
-        featured_cards.append(
-            card(
-                case["title"],
-                case["summary"]["one_liner"],
-                meta=[
-                    case["status"],
-                    case["case_type"],
-                    f"{case['buy_window']['start_year']}-{case['buy_window'].get('end_year', case['buy_window']['start_year'])}",
-                ],
-                href=f"cases/{case['id']}/index.html",
-            )
-        )
-
-    pillars = [
-        card("索引层", "保留公司、人物、概念、年份四种入口，让研究材料好找。", meta=["coverage"]),
-        card("案例层", "把公司页从百科介绍改成 deep dive 入口，重点写价值、环境、验证和退出逻辑。", meta=["depth"]),
-        card("证据层", "所有关键判断都尽量落到年份、页码和原文摘录，减少后见之明。", meta=["citations"]),
-    ]
-
-    curators_note = """
-    <div class="two-col">
-      <div class="panel panel-editorial">
-        <div class="note-kicker">Curator's Note</div>
-        <p>这个站点不想像“知识整理页”，而更像一份不断扩充的投资档案馆。你应该能先快速定位人物、公司、概念，再一路进入真正值得反复读的 deep dive case。</p>
+    intro_markup = f"""
+    <section class="section section-tight" id="intro">
+      <div class="intro-sheet">
+        <div class="note-kicker">Intro</div>
+        <p class="intro-copy">这不是一个“把巴菲特提过的公司都列出来”的网站，而是一个把股东信重新整理成投资案例的研究界面。</p>
+        <p class="intro-copy">你应该先看到索引，但最终停留在 deep dive case: 他为什么在那个年份出手、当时看到的价值锚是什么、几年后 thesis 如何被验证，以及为什么卖或为什么一直不卖。</p>
+        <p class="intro-copy">第一版先从少数高质量案例开始，不追求全，而追求能反复读。</p>
+        <div class="jump-row">
+          <a class="jump-card" href="companies/index.html">
+            <span class="jump-label">Companies</span>
+            <strong>从公司进入</strong>
+          </a>
+          <a class="jump-card" href="cases/index.html">
+            <span class="jump-label">Cases</span>
+            <strong>直接读案例</strong>
+          </a>
+          <a class="jump-card" href="letters/index.html">
+            <span class="jump-label">Letters</span>
+            <strong>回到原始信件</strong>
+          </a>
+        </div>
+        <div class="intro-foot">
+          当前已整理 <strong>{len(cases)}</strong> 个核心案例，覆盖 <strong>{len(companies)}</strong> 家公司与 <strong>{len(letters)}</strong> 份股东信原文。
+        </div>
       </div>
-      <div class="panel panel-editorial panel-editorial-accent">
-        <div class="note-kicker">Reading Filter</div>
-        <ul>
-          <li>不要先看结果，先看买入当年。</li>
-          <li>不要只看公司好不好，要看买入时值不值。</li>
-          <li>不要把“没卖”写成缺信息，它本身就是结论。</li>
-        </ul>
-      </div>
-    </div>
+    </section>
     """
 
     body = (
         hero(
-            "从股东信到投资决策的研究站",
-            "保留索引的广度，但把真正的价值放到公司案例的深挖：买入时点、价值锚、市场环境、验证过程，以及卖出或不卖逻辑。",
-            eyebrow="Buffett Investment Casebook",
-            pills=["Deep dive case pages", "Citation-first research", "GitHub Pages ready"],
-            stats=[
-                ("公司", str(len(companies))),
-                ("案例", str(len(cases))),
-                ("人物", str(len(people))),
-                ("信件", str(len(letters))),
-            ],
+            "从股东信里，重建投资决策。",
+            "索引只是入口。真正重要的是把每家公司拆成可验证的 investment case，而不是写成事后百科。",
+            eyebrow="Buffett Casebook",
+            pills=["Research archive", "Citation-first", "Deep dive only"],
         )
-        + curators_note
-        + section("精选案例", f'<div class="cards">{"".join(featured_cards)}</div>', copy="先把最有代表性的案例做深，而不是一开始把所有公司都写浅。", section_id="featured")
-        + section("方法论", f'<div class="cards">{"".join(pillars)}</div>', section_id="method")
-        + section(
-            "站点入口",
-            '<div class="cards">'
-            + card("公司索引", "按公司看巴菲特体系里的角色、相关人物和对应案例。", href="companies/index.html")
-            + card("人物索引", "看谁在关键转折中改变了企业命运。", href="people/index.html")
-            + card("概念索引", "把护城河、品牌、危机机会等概念落到具体案例。", href="concepts/index.html")
-            + card("历年信件", "所有 1977-2024 年 PDF 原文都能直接打开。", href="letters/index.html")
-            + "</div>",
-            section_id="entrypoints",
-        )
+        + intro_markup
     )
     return body
 
