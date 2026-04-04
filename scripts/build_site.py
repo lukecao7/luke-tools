@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -45,12 +46,24 @@ def rel_href(page_path: Path, target: str) -> str:
     return Path(shutil.os.path.relpath(dst, src)).as_posix()
 
 
+def slugify(text: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return slug or "section"
+
+
 def html_page(page_path: Path, *, title: str, description: str, active: str, body: str) -> str:
     nav_links = []
     for label, href, key in NAV_ITEMS:
         classes = "active" if key == active else ""
         nav_links.append(
-            f'<a class="{classes}" href="{escape(rel_href(page_path, href))}">{escape(label)}</a>'
+            f'<a class="sidebar-link {classes}" href="{escape(rel_href(page_path, href))}">{escape(label)}</a>'
+        )
+
+    mobile_links = []
+    for label, href, key in NAV_ITEMS:
+        classes = "active" if key == active else ""
+        mobile_links.append(
+            f'<a class="mobile-link {classes}" href="{escape(rel_href(page_path, href))}">{escape(label)}</a>'
         )
 
     year = datetime.now(timezone.utc).year
@@ -65,26 +78,56 @@ def html_page(page_path: Path, *, title: str, description: str, active: str, bod
 </head>
 <body>
   <div class="site-shell">
-    <header class="topbar">
-      <div class="topbar-inner">
-        <a href="{escape(rel_href(page_path, '/index.html'))}" class="brand">
-          <span class="brand-mark">Buffett Casebook</span>
-          <span class="brand-name">巴菲特投资案例库</span>
-        </a>
-        <nav class="nav">
-          {''.join(nav_links)}
-        </nav>
+    <div class="site-layout">
+      <aside class="sidebar">
+        <div class="sidebar-inner">
+          <a href="{escape(rel_href(page_path, '/index.html'))}" class="brand">
+            <span class="brand-mark">Buffett Casebook</span>
+            <span class="brand-name">巴菲特投资案例库</span>
+          </a>
+          <p class="sidebar-copy">像编辑部档案柜一样组织材料，像投资备忘录一样写深度案例。</p>
+          <nav class="sidebar-nav">
+            {''.join(nav_links)}
+          </nav>
+          <div class="sidebar-block">
+            <div class="sidebar-label">Direction</div>
+            <p>Fork 索引层，重做 deep dive 层。每个公司不是百科页，而是一组可验证的 investment cases。</p>
+          </div>
+          <div class="sidebar-block sidebar-block-accent">
+            <div class="sidebar-label">What Matters</div>
+            <ul>
+              <li>买入时的环境</li>
+              <li>价值锚和成本</li>
+              <li>持有期验证</li>
+              <li>卖出或不卖逻辑</li>
+            </ul>
+          </div>
+          <div class="sidebar-foot">Built from Berkshire letters and case JSON · {year}</div>
+        </div>
+      </aside>
+      <div class="content-frame">
+        <header class="mobile-bar">
+          <div class="mobile-brand-wrap">
+            <a href="{escape(rel_href(page_path, '/index.html'))}" class="brand">
+              <span class="brand-mark">Buffett Casebook</span>
+              <span class="brand-name">巴菲特投资案例库</span>
+            </a>
+          </div>
+          <nav class="mobile-nav">
+            {''.join(mobile_links)}
+          </nav>
+        </header>
+        <main class="page">
+          {body}
+        </main>
+        <footer class="footer">
+          <div class="footer-inner small">
+            <div>索引层解决 coverage，案例层解决 depth。</div>
+            <div>Public archive built for case-by-case reading.</div>
+          </div>
+        </footer>
       </div>
-    </header>
-    <main class="page">
-      {body}
-    </main>
-    <footer class="footer">
-      <div class="footer-inner small">
-        <div>索引层解决 coverage，案例层解决 depth。</div>
-        <div>Built from Berkshire letters and case JSON. {year}</div>
-      </div>
-    </footer>
+    </div>
   </div>
 </body>
 </html>
@@ -138,10 +181,11 @@ def card(title: str, body: str, *, meta: list[str] | None = None, href: str | No
     """
 
 
-def section(title: str, content: str, *, copy: str | None = None) -> str:
+def section(title: str, content: str, *, copy: str | None = None, section_id: str | None = None) -> str:
+    anchor_id = section_id or slugify(title)
     copy_html = f'<p class="section-copy">{escape(copy)}</p>' if copy else ""
     return f"""
-    <section class="section">
+    <section class="section" id="{escape(anchor_id)}">
       <div class="section-head">
         <div>
           <h2>{escape(title)}</h2>
@@ -183,6 +227,23 @@ def build_home(companies: dict, cases: dict, people: dict, concepts: dict, lette
         card("证据层", "所有关键判断都尽量落到年份、页码和原文摘录，减少后见之明。", meta=["citations"]),
     ]
 
+    curators_note = """
+    <div class="two-col">
+      <div class="panel panel-editorial">
+        <div class="note-kicker">Curator's Note</div>
+        <p>这个站点不想像“知识整理页”，而更像一份不断扩充的投资档案馆。你应该能先快速定位人物、公司、概念，再一路进入真正值得反复读的 deep dive case。</p>
+      </div>
+      <div class="panel panel-editorial panel-editorial-accent">
+        <div class="note-kicker">Reading Filter</div>
+        <ul>
+          <li>不要先看结果，先看买入当年。</li>
+          <li>不要只看公司好不好，要看买入时值不值。</li>
+          <li>不要把“没卖”写成缺信息，它本身就是结论。</li>
+        </ul>
+      </div>
+    </div>
+    """
+
     body = (
         hero(
             "从股东信到投资决策的研究站",
@@ -196,8 +257,9 @@ def build_home(companies: dict, cases: dict, people: dict, concepts: dict, lette
                 ("信件", str(len(letters))),
             ],
         )
-        + section("精选案例", f'<div class="cards">{"".join(featured_cards)}</div>', copy="先把最有代表性的案例做深，而不是一开始把所有公司都写浅。")
-        + section("方法论", f'<div class="cards">{"".join(pillars)}</div>')
+        + curators_note
+        + section("精选案例", f'<div class="cards">{"".join(featured_cards)}</div>', copy="先把最有代表性的案例做深，而不是一开始把所有公司都写浅。", section_id="featured")
+        + section("方法论", f'<div class="cards">{"".join(pillars)}</div>', section_id="method")
         + section(
             "站点入口",
             '<div class="cards">'
@@ -206,6 +268,7 @@ def build_home(companies: dict, cases: dict, people: dict, concepts: dict, lette
             + card("概念索引", "把护城河、品牌、危机机会等概念落到具体案例。", href="concepts/index.html")
             + card("历年信件", "所有 1977-2024 年 PDF 原文都能直接打开。", href="letters/index.html")
             + "</div>",
+            section_id="entrypoints",
         )
     )
     return body
@@ -368,6 +431,23 @@ def build_case_page(page_path: Path, case: dict, company: dict) -> str:
             """
         )
 
+    case_map = """
+    <section class="section section-tight">
+      <div class="case-map">
+        <div class="case-map-label">Case File Map</div>
+        <div class="tag-row">
+          <a class="tag" href="#summary">一页结论</a>
+          <a class="tag" href="#why-then">Why Then</a>
+          <a class="tag" href="#value-at-entry">Value Track</a>
+          <a class="tag" href="#business-quality-thesis">Thesis</a>
+          <a class="tag" href="#exit-or-hold-logic">Hold Logic</a>
+          <a class="tag" href="#evidence-ledger">Evidence</a>
+          <a class="tag" href="#known-gaps">Known Gaps</a>
+        </div>
+      </div>
+    </section>
+    """
+
     body = (
         hero(
             case["title"],
@@ -375,17 +455,19 @@ def build_case_page(page_path: Path, case: dict, company: dict) -> str:
             eyebrow=f"Case · {company['name']}",
             pills=[company["name"], case["case_type"], case["summary"]["current_state"]],
         )
-        + section("Summary", kpi_html)
+        + case_map
+        + section("Summary", kpi_html, section_id="summary")
         + section(
             "Why Then",
             f'<div class="two-col"><div class="panel"><p>{escape(summary["one_liner"])}</p></div><div>{market_context}</div></div>',
             copy="先写买入时的环境，再写后来发生了什么，避免把后见之明揉成一团。",
+            section_id="why-then",
         )
-        + section("Value At Entry", checkpoints_table(case.get("valuation_checkpoints", [])))
-        + section("Business Quality & Thesis", thesis)
-        + section("Exit Or Hold Logic", hold_logic)
-        + section("Evidence Ledger", '<div class="evidence-list">' + "".join(evidence_rows) + "</div>")
-        + section("Known Gaps", known_gaps)
+        + section("Value At Entry", checkpoints_table(case.get("valuation_checkpoints", [])), section_id="value-at-entry")
+        + section("Business Quality & Thesis", thesis, section_id="business-quality-thesis")
+        + section("Exit Or Hold Logic", hold_logic, section_id="exit-or-hold-logic")
+        + section("Evidence Ledger", '<div class="evidence-list">' + "".join(evidence_rows) + "</div>", section_id="evidence-ledger")
+        + section("Known Gaps", known_gaps, section_id="known-gaps")
     )
     return body
 
