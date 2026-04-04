@@ -1,0 +1,36 @@
+{
+  "coca-cola": {
+    "name": "可口可乐",
+    "aliases": [
+      "可口可乐",
+      "Coca-Cola",
+      "Coke",
+      "The Coca-Cola Company",
+      "The Coca-Cola Co."
+    ]
+  },
+  "american-express": {
+    "name": "美国运通",
+    "aliases": [
+      "美国运通",
+      "American Express",
+      "AmEx"
+    ]
+  },
+  "washington-post": {
+    "name": "华盛顿邮报",
+    "aliases": [
+      "华盛顿邮报",
+      "Washington Post",
+      "The Washington Post Company"
+    ]
+  },
+  "geico": {
+    "name": "盖可保险",
+    "aliases": [
+      "盖可保险",
+      "GEICO",
+      "GEICO Corporation"
+    ]
+  }
+}

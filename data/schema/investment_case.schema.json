@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buffett-casebook.local/schema/investment_case.schema.json",
+  "title": "Investment Case",
+  "type": "object",
+  "required": [
+    "id",
+    "company_id",
+    "title",
+    "status",
+    "case_type",
+    "buy_window",
+    "summary",
+    "thesis",
+    "citations"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "exited",
+        "mixed"
+      ]
+    },
+    "case_type": {
+      "type": "string",
+      "enum": [
+        "wonderful-business-at-fair-price",
+        "crisis-repricing",
+        "special-situation",
+        "capital-structure",
+        "turnaround",
+        "compounder"
+      ]
+    },
+    "buy_window": {
+      "type": "object",
+      "required": [
+        "start_year"
+      ],
+      "properties": {
+        "start_year": {
+          "type": "integer"
+        },
+        "end_year": {
+          "type": "integer"
+        },
+        "completed_label": {
+          "type": "string"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "one_liner"
+      ],
+      "properties": {
+        "one_liner": {
+          "type": "string"
+        },
+        "cost_basis_total_usd_m": {
+          "type": "number"
+        },
+        "current_state": {
+          "type": "string"
+        }
+      }
+    },
+    "market_context": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "year",
+          "summary"
+        ],
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "summary": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "valuation_checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "year",
+          "label"
+        ],
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "label": {
+            "type": "string"
+          },
+          "shares": {
+            "type": "number"
+          },
+          "cost_usd_m": {
+            "type": "number"
+          },
+          "market_value_usd_m": {
+            "type": "number"
+          },
+          "dividend_usd_m": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "thesis": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "hold_logic": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exit_logic": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "known_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "year",
+          "page",
+          "tag",
+          "claim"
+        ],
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "excerpt": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

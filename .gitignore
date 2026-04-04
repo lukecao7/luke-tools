@@ -1,0 +1,4 @@
+dist/
+scripts/__pycache__/
+output/letters/
+.DS_Store
