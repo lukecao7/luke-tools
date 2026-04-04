@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python3 scripts/build_site.py",
+  "outputDirectory": "dist",
+  "installCommand": "echo 'No install step required'",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false
+}
