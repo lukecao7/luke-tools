@@ -1,0 +1,22 @@
+{
+  "id": "wells-fargo",
+  "name": "富国银行",
+  "ticker": "WFC",
+  "kind": "company",
+  "summary": "银行业里少见能让巴菲特重仓下注的机构，核心不在便宜，而在管理层质量、成本纪律与恐慌中的定价失真。",
+  "related_people": [
+    "warren-buffett",
+    "charlie-munger",
+    "carl-reichardt",
+    "paul-hazen"
+  ],
+  "related_concepts": [
+    "financial-trust",
+    "crisis-opportunity",
+    "panic-pricing",
+    "management-quality"
+  ],
+  "cases": [
+    "wells-fargo-1990"
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "id": "gillette-1989",
+  "company_id": "gillette",
+  "title": "吉列：1989 年可转优先股、好公司与结构性失误",
+  "status": "historical",
+  "case_type": "structured-private-deal",
+  "buy_window": {
+    "start_year": 1989,
+    "end_year": 1991,
+    "completed_label": "1991-04 converted to common"
+  },
+  "summary": {
+    "one_liner": "Gillette 是一个非常有价值的巴菲特样本：公司判断非常准确，但交易结构过于聪明，反而让他少赚了本可轻松拿到的上行。",
+    "cost_basis_total_usd_m": 600,
+    "current_state": "later merged into Procter & Gamble"
+  },
+  "market_context": [
+    {
+      "year": 1989,
+      "summary": "巴菲特把债券卖出所得与新增现金转进几笔可转优先股，其中 Gillette 是他最理解、也最喜欢的一家。"
+    },
+    {
+      "year": 1989,
+      "summary": "与航空、纸业不同，Gillette 属于他认为“我们能看懂经济特征”的少数消费品公司。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 1989,
+      "label": "convertible preferred purchase",
+      "cost_usd_m": 600
+    },
+    {
+      "year": 1991,
+      "label": "converted into common stock",
+      "shares": 24000000,
+      "cost_usd_m": 600,
+      "market_value_usd_m": 1347
+    },
+    {
+      "year": 1995,
+      "label": "best preferred holding by far",
+      "shares": 48000000,
+      "cost_usd_m": 600,
+      "market_value_usd_m": 2502
+    }
+  ],
+  "what_happened_next": [
+    {
+      "year": 1990,
+      "summary": "Gillette 很快就把优先股赎回，巴菲特被迫在 1991 年转成普通股。"
+    },
+    {
+      "year": 1991,
+      "summary": "Gillette 与可口可乐一起，推动了伯克希尔净值的大幅增长。"
+    },
+    {
+      "year": 1995,
+      "summary": "巴菲特把 Gillette 称为他最佳的可转优先股持仓，同时承认自己当初本应直接买普通股。"
+    }
+  ],
+  "thesis": [
+    "Gillette 属于巴菲特极少数自认能看懂长期经济特征的全球品牌公司。",
+    "管理层值得信任，尤其是 Colman Mockler 的人格与判断让他愿意深度绑定。",
+    "全球剃刀刀片的消费频率与品牌粘性，使其具备高质量消费品的复利属性。"
+  ],
+  "hold_logic": [
+    "公司判断本身是对的，后续市值表现也说明了这一点。",
+    "真正的问题不在于是否该买 Gillette，而在于没必要用一层优先股结构去换一点额外票息。",
+    "这是一堂关于“买对企业”和“设计对交易”是两件事的课。"
+  ],
+  "exit_logic": {
+    "type": "structure-mistake",
+    "summary": "这笔 case 的核心不是卖出，而是承认当初应该更直接地买普通股，而不是自作聪明地买可转优先股。"
+  },
+  "known_gaps": [
+    "P&G 并购 Gillette 后的长期处理不属于本 case 的主要语料重点。",
+    "如果要完整补足，应加入 Gillette 与 P&G 合并后的税务与资本配置影响。"
+  ],
+  "citations": [
+    {
+      "year": 1989,
+      "page": 14,
+      "tag": "buy",
+      "claim": "1989 年的入场方式是一笔 6 亿美元的 Gillette 可转优先股私募。",
+      "excerpt": "purchased $600 million of The Gillette Co. preferred"
+    },
+    {
+      "year": 1989,
+      "page": 15,
+      "tag": "thesis",
+      "claim": "巴菲特把 Gillette 直接归入“我们看得懂”的业务。",
+      "excerpt": "Gillette's business is very much the kind we like"
+    },
+    {
+      "year": 1990,
+      "page": 14,
+      "tag": "valuation",
+      "claim": "优先股很快被赎回，交易被迫转成普通股持仓。",
+      "excerpt": "will be converted into 12 million shares of common"
+    },
+    {
+      "year": 1991,
+      "page": 1,
+      "tag": "validation",
+      "claim": "Gillette 与 Coke 一起，推动了伯克希尔净值的显著跃升。",
+      "excerpt": "Coca-Cola and Gillette are two of the best companies"
+    },
+    {
+      "year": 1995,
+      "page": 12,
+      "tag": "valuation",
+      "claim": "到 1995 年底，Gillette 市值已达到 25 亿美元量级。",
+      "excerpt": "600.0 ... 2,502.0"
+    },
+    {
+      "year": 1995,
+      "page": 14,
+      "tag": "sell",
+      "claim": "巴菲特事后把这笔交易定义成“公司看对、结构做错”的代表。",
+      "excerpt": "this is also the purchase in which I made my biggest mistake"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "id": "geico-1995-1996",
+  "company_id": "geico",
+  "title": "GEICO：1995-1996 的全资收购与低成本保险案例",
+  "status": "active",
+  "case_type": "full-acquisition",
+  "buy_window": {
+    "start_year": 1995,
+    "end_year": 1996,
+    "completed_label": "1996-01 closed"
+  },
+  "summary": {
+    "one_liner": "这不是一笔靠短期便宜取胜的交易，而是巴菲特在 1995-1996 年把一个已研究四十多年的低成本保险模型彻底收入囊中的案例。",
+    "cost_basis_total_usd_m": 2300,
+    "current_state": "wholly owned"
+  },
+  "market_context": [
+    {
+      "year": 1995,
+      "summary": "伯克希尔在一连串并购中选择了 GEICO 作为当年最大交易，核心不是市场噪音，而是对低成本直销保险模式的长期理解。"
+    },
+    {
+      "year": 1995,
+      "summary": "巴菲特强调 GEICO 的 direct marketing 让它对依赖代理人体系的竞争对手拥有结构性成本优势。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 1995,
+      "label": "existing 51% stake at year-end",
+      "shares": 34250000,
+      "cost_usd_m": 45.7,
+      "market_value_usd_m": 2393.2
+    },
+    {
+      "year": 1996,
+      "label": "paid for remaining 49%",
+      "cost_usd_m": 2300
+    }
+  ],
+  "what_happened_next": [
+    {
+      "year": 1995,
+      "summary": "收购完成后，伯克希尔预期 GEICO 立刻带来约 30 亿美元浮存金，并在大多数年份实现承保盈利。"
+    },
+    {
+      "year": 1996,
+      "summary": "GEICO 的 voluntary auto policy count 增长达到 10%，创出二十年最佳，并且承保目标超额完成。"
+    },
+    {
+      "year": 1996,
+      "summary": "巴菲特明确说，GEICO 的竞争力直接来自低成本地位，而规模继续扩大又会进一步降低成本。"
+    }
+  ],
+  "thesis": [
+    "低成本直销是可以持续扩大的护城河，而不是一次性价格优势。",
+    "保险浮存金与承保利润共同提升这笔交易的经济回报质量。",
+    "Tony Nicely 的执行力让成本优势和增长速度真正兑现。"
+  ],
+  "hold_logic": [
+    "GEICO 被并入伯克希尔后，不再是等待卖出的证券，而是保险体系中的永久核心资产。",
+    "只要低成本优势和承保纪律继续成立，浮存金与内生增长就会不断提高这项资产的价值。",
+    "这是一个更接近“永久经营权”而不是“股权仓位”的案例。"
+  ],
+  "exit_logic": {
+    "type": "not-sold",
+    "summary": "该案例的重点是为什么要把剩余股权全部买下，而不是未来如何卖出。"
+  },
+  "known_gaps": [
+    "1951 年初识 GEICO 到 1976 年危机中的增持，超出了当前 1977-2024 股东信语料边界。",
+    "如果要写成完整长传，应补入 1976 年救援与后续持股变迁的更多一手材料。"
+  ],
+  "citations": [
+    {
+      "year": 1995,
+      "page": 5,
+      "tag": "buy",
+      "claim": "1995 年底完成了对 GEICO 的 100% 收购。",
+      "excerpt": "completed the purchase of 100% of GEICO"
+    },
+    {
+      "year": 1995,
+      "page": 6,
+      "tag": "thesis",
+      "claim": "巴菲特买下剩余股权的根本理由是低成本直销优势。",
+      "excerpt": "direct marketing gave it an enormous cost advantage"
+    },
+    {
+      "year": 1995,
+      "page": 9,
+      "tag": "valuation",
+      "claim": "收购 GEICO 带来的不仅是业务本身，还有接近 30 亿美元的新增浮存金。",
+      "excerpt": "increase our float by nearly $3 billion"
+    },
+    {
+      "year": 1996,
+      "page": 1,
+      "tag": "valuation",
+      "claim": "巴菲特认为把剩余 49% 买下之后，原有 51% 的经济价值也随之上升。",
+      "excerpt": "the value of the 51% ... increased significantly"
+    },
+    {
+      "year": 1996,
+      "page": 7,
+      "tag": "validation",
+      "claim": "低成本地位被明确写成了 GEICO 的核心竞争优势来源。",
+      "excerpt": "competitive strength flows directly from its position as a low-cost operator"
+    },
+    {
+      "year": 1996,
+      "page": 7,
+      "tag": "hold",
+      "claim": "收购后第一年，增长与承保表现都验证了 thesis。",
+      "excerpt": "growth in voluntary auto policies and underwriting profitability"
+    }
+  ]
+}

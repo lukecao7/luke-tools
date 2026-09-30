@@ -1,0 +1,18 @@
+{
+  "id": "conocophillips",
+  "name": "康菲石油",
+  "ticker": "COP",
+  "kind": "company",
+  "summary": "ConocoPhillips 不是一笔成功的能源投资，而是一堂关于周期顶点追价、及时认错与资本再配置的反面教材。",
+  "related_people": [
+    "warren-buffett"
+  ],
+  "related_concepts": [
+    "capital-allocation",
+    "mistake-review",
+    "crisis-opportunity"
+  ],
+  "cases": [
+    "conocophillips-2006-2009"
+  ]
+}

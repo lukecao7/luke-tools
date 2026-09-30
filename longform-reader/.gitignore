@@ -1,0 +1,8 @@
+node_modules/
+data/
+.runtime/
+.DS_Store
+npm-debug.log*
+.vercel
+.env*
+!.env.example

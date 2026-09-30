@@ -1,6 +1,162 @@
 {
+  "american-express": {
+    "name": "美国运通",
+    "english_name": "American Express",
+    "ticker": "AXP",
+    "category": "核心持仓",
+    "aliases": [
+      "美国运通",
+      "American Express",
+      "AmEx"
+    ]
+  },
+  "apple": {
+    "name": "苹果",
+    "english_name": "Apple Inc.",
+    "ticker": "AAPL",
+    "category": "核心持仓",
+    "aliases": [
+      "苹果",
+      "Apple Inc."
+    ]
+  },
+  "bank-of-america": {
+    "name": "美国银行",
+    "english_name": "Bank of America",
+    "ticker": "BAC",
+    "category": "金融与银行",
+    "aliases": [
+      "美国银行",
+      "Bank of America"
+    ]
+  },
+  "bank-of-new-york-mellon": {
+    "name": "纽约梅隆银行",
+    "english_name": "Bank of New York Mellon",
+    "ticker": "BK",
+    "category": "金融与银行",
+    "aliases": [
+      "纽约梅隆银行",
+      "Bank of New York Mellon",
+      "BNY Mellon"
+    ]
+  },
+  "berkshire-hathaway": {
+    "name": "伯克希尔哈撒韦",
+    "english_name": "Berkshire Hathaway",
+    "ticker": "BRK.A / BRK.B",
+    "category": "伯克希尔体系",
+    "aliases": [
+      "伯克希尔哈撒韦",
+      "Berkshire Hathaway"
+    ]
+  },
+  "berkshire-hathaway-energy": {
+    "name": "伯克希尔哈撒韦能源",
+    "english_name": "Berkshire Hathaway Energy",
+    "category": "全资业务",
+    "aliases": [
+      "伯克希尔哈撒韦能源",
+      "Berkshire Hathaway Energy",
+      "BHE"
+    ]
+  },
+  "blue-chip-stamps": {
+    "name": "蓝筹印花",
+    "english_name": "Blue Chip Stamps",
+    "category": "伯克希尔体系",
+    "aliases": [
+      "蓝筹印花",
+      "Blue Chip Stamps"
+    ]
+  },
+  "bnsf": {
+    "name": "BNSF铁路",
+    "english_name": "BNSF Railway",
+    "category": "全资业务",
+    "aliases": [
+      "BNSF铁路",
+      "BNSF",
+      "BNSF Railway",
+      "Burlington Northern Santa Fe"
+    ]
+  },
+  "borsheims": {
+    "name": "波仙珠宝",
+    "english_name": "Borsheims",
+    "category": "全资业务",
+    "aliases": [
+      "波仙珠宝",
+      "Borsheims",
+      "Borsheim's"
+    ]
+  },
+  "buffalo-news": {
+    "name": "布法罗新闻报",
+    "english_name": "The Buffalo News",
+    "category": "全资业务",
+    "aliases": [
+      "布法罗新闻报",
+      "Buffalo News",
+      "The Buffalo News"
+    ]
+  },
+  "byd": {
+    "name": "比亚迪",
+    "english_name": "BYD",
+    "ticker": "1211.HK",
+    "category": "国际组合",
+    "aliases": [
+      "比亚迪",
+      "BYD",
+      "BYD Company"
+    ]
+  },
+  "capital-cities-abc": {
+    "name": "大都会通信",
+    "english_name": "Capital Cities/ABC",
+    "category": "历史案例",
+    "aliases": [
+      "大都会通信",
+      "Capital Cities/ABC",
+      "Capital Cities",
+      "Capital Cities/ABC, Inc."
+    ]
+  },
+  "charter-communications": {
+    "name": "特许通讯",
+    "english_name": "Charter Communications",
+    "ticker": "CHTR",
+    "category": "历史案例",
+    "aliases": [
+      "特许通讯",
+      "Charter Communications"
+    ]
+  },
+  "chevron": {
+    "name": "雪佛龙",
+    "english_name": "Chevron",
+    "ticker": "CVX",
+    "category": "核心持仓",
+    "aliases": [
+      "雪佛龙",
+      "Chevron"
+    ]
+  },
+  "clayton-homes": {
+    "name": "克莱顿房屋",
+    "english_name": "Clayton Homes",
+    "category": "全资业务",
+    "aliases": [
+      "克莱顿房屋",
+      "Clayton Homes"
+    ]
+  },
   "coca-cola": {
     "name": "可口可乐",
+    "english_name": "The Coca-Cola Company",
+    "ticker": "KO",
+    "category": "核心持仓",
     "aliases": [
       "可口可乐",
       "Coca-Cola",
@@ -9,28 +165,460 @@
       "The Coca-Cola Co."
     ]
   },
-  "american-express": {
-    "name": "美国运通",
+  "conocophillips": {
+    "name": "康菲石油",
+    "english_name": "ConocoPhillips",
+    "ticker": "COP",
+    "category": "历史案例",
     "aliases": [
-      "美国运通",
-      "American Express",
-      "AmEx"
+      "康菲石油",
+      "ConocoPhillips",
+      "Conoco Phillips"
+    ]
+  },
+  "dairy-queen": {
+    "name": "冰雪皇后",
+    "english_name": "Dairy Queen",
+    "category": "全资业务",
+    "aliases": [
+      "冰雪皇后",
+      "Dairy Queen"
+    ]
+  },
+  "dexter-shoe": {
+    "name": "德克斯特鞋业",
+    "english_name": "Dexter Shoe",
+    "category": "历史案例",
+    "aliases": [
+      "德克斯特鞋业",
+      "Dexter Shoe",
+      "Dexter"
+    ]
+  },
+  "fechheimer": {
+    "name": "费希海默制服",
+    "english_name": "Fechheimer",
+    "category": "全资业务",
+    "aliases": [
+      "费希海默制服",
+      "Fechheimer"
+    ]
+  },
+  "flightsafety": {
+    "name": "飞安公司",
+    "english_name": "FlightSafety International",
+    "category": "全资业务",
+    "aliases": [
+      "飞安公司",
+      "FlightSafety",
+      "FlightSafety International"
+    ]
+  },
+  "forest-river": {
+    "name": "森林河公司",
+    "english_name": "Forest River",
+    "category": "全资业务",
+    "aliases": [
+      "森林河公司",
+      "Forest River"
+    ]
+  },
+  "freddie-mac": {
+    "name": "房地美",
+    "english_name": "Freddie Mac",
+    "category": "金融与银行",
+    "aliases": [
+      "房地美",
+      "Freddie Mac",
+      "Federal Home Loan Mortgage Corporation",
+      "Federal Home Loan Mortgage Corp."
+    ]
+  },
+  "fruit-of-the-loom": {
+    "name": "鲜果布衣",
+    "english_name": "Fruit of the Loom",
+    "category": "全资业务",
+    "aliases": [
+      "鲜果布衣",
+      "Fruit of the Loom"
+    ]
+  },
+  "geico": {
+    "name": "盖可保险",
+    "english_name": "GEICO",
+    "category": "保险体系",
+    "aliases": [
+      "盖可保险",
+      "GEICO",
+      "GEICO Corporation"
+    ]
+  },
+  "general-electric": {
+    "name": "通用电气",
+    "english_name": "General Electric",
+    "ticker": "GE",
+    "category": "历史案例",
+    "aliases": [
+      "通用电气",
+      "General Electric"
+    ]
+  },
+  "general-motors": {
+    "name": "通用汽车",
+    "english_name": "General Motors",
+    "ticker": "GM",
+    "category": "历史案例",
+    "aliases": [
+      "通用汽车",
+      "General Motors"
+    ]
+  },
+  "general-re": {
+    "name": "通用再保险",
+    "english_name": "General Re",
+    "category": "保险体系",
+    "aliases": [
+      "通用再保险",
+      "General Re",
+      "General Reinsurance"
+    ]
+  },
+  "gillette": {
+    "name": "吉列",
+    "english_name": "The Gillette Company",
+    "category": "历史案例",
+    "aliases": [
+      "吉列",
+      "Gillette",
+      "The Gillette Company"
+    ]
+  },
+  "goldman-sachs": {
+    "name": "高盛",
+    "english_name": "Goldman Sachs",
+    "ticker": "GS",
+    "category": "金融与银行",
+    "aliases": [
+      "高盛",
+      "Goldman Sachs"
+    ]
+  },
+  "homeservices-of-america": {
+    "name": "美国家庭服务",
+    "english_name": "HomeServices of America",
+    "category": "全资业务",
+    "aliases": [
+      "美国家庭服务",
+      "HomeServices of America",
+      "HomeServices"
+    ]
+  },
+  "ibm": {
+    "name": "IBM",
+    "english_name": "IBM",
+    "ticker": "IBM",
+    "category": "历史案例",
+    "aliases": [
+      "IBM",
+      "International Business Machines"
+    ]
+  },
+  "iscar": {
+    "name": "伊斯卡",
+    "english_name": "Iscar",
+    "category": "全资业务",
+    "aliases": [
+      "伊斯卡",
+      "Iscar",
+      "IMC",
+      "Iscar Metalworking"
+    ]
+  },
+  "itochu": {
+    "name": "伊藤忠商事",
+    "english_name": "Itochu",
+    "ticker": "8001.T",
+    "category": "国际组合",
+    "aliases": [
+      "伊藤忠商事",
+      "Itochu",
+      "ITOCHU",
+      "Itochu Corporation"
+    ]
+  },
+  "johns-manville": {
+    "name": "约翰斯曼维尔",
+    "english_name": "Johns Manville",
+    "category": "全资业务",
+    "aliases": [
+      "约翰斯曼维尔",
+      "Johns Manville"
+    ]
+  },
+  "kirby": {
+    "name": "科比吸尘器",
+    "english_name": "Kirby",
+    "category": "全资业务",
+    "aliases": [
+      "科比吸尘器",
+      "Kirby"
+    ]
+  },
+  "kraft-heinz": {
+    "name": "卡夫亨氏",
+    "english_name": "Kraft Heinz",
+    "ticker": "KHC",
+    "category": "历史案例",
+    "aliases": [
+      "卡夫亨氏",
+      "Kraft Heinz",
+      "The Kraft Heinz Company"
+    ]
+  },
+  "lubrizol": {
+    "name": "路博润",
+    "english_name": "Lubrizol",
+    "category": "全资业务",
+    "aliases": [
+      "路博润",
+      "Lubrizol"
+    ]
+  },
+  "marmon": {
+    "name": "马蒙集团",
+    "english_name": "Marmon Holdings",
+    "category": "全资业务",
+    "aliases": [
+      "马蒙集团",
+      "Marmon",
+      "Marmon Holdings"
+    ]
+  },
+  "mclane": {
+    "name": "麦克莱恩",
+    "english_name": "McLane",
+    "category": "全资业务",
+    "aliases": [
+      "麦克莱恩",
+      "McLane"
+    ]
+  },
+  "midamerican-energy": {
+    "name": "中美能源",
+    "english_name": "MidAmerican Energy",
+    "category": "全资业务",
+    "aliases": [
+      "中美能源",
+      "MidAmerican Energy",
+      "MidAmerican"
+    ]
+  },
+  "mitsubishi": {
+    "name": "三菱商事",
+    "english_name": "Mitsubishi Corporation",
+    "ticker": "8058.T",
+    "category": "国际组合",
+    "aliases": [
+      "三菱商事",
+      "Mitsubishi Corporation",
+      "Mitsubishi"
+    ]
+  },
+  "mitsui": {
+    "name": "三井物产",
+    "english_name": "Mitsui & Co.",
+    "ticker": "8031.T",
+    "category": "国际组合",
+    "aliases": [
+      "三井物产",
+      "Mitsui",
+      "Mitsui & Co.",
+      "Mitsui & Co., Ltd."
+    ]
+  },
+  "moodys": {
+    "name": "穆迪",
+    "english_name": "Moody's",
+    "ticker": "MCO",
+    "category": "金融与银行",
+    "aliases": [
+      "穆迪",
+      "Moody's",
+      "Moodys",
+      "Moody's Corporation"
+    ]
+  },
+  "national-indemnity": {
+    "name": "国民保险公司",
+    "english_name": "National Indemnity",
+    "category": "保险体系",
+    "aliases": [
+      "国民保险公司",
+      "National Indemnity",
+      "National Indemnity Company"
+    ]
+  },
+  "nebraska-furniture-mart": {
+    "name": "内布拉斯加家具店",
+    "english_name": "Nebraska Furniture Mart",
+    "category": "全资业务",
+    "aliases": [
+      "内布拉斯加家具店",
+      "Nebraska Furniture Mart",
+      "NFM"
+    ]
+  },
+  "netjets": {
+    "name": "利捷航空",
+    "english_name": "NetJets",
+    "category": "全资业务",
+    "aliases": [
+      "利捷航空",
+      "NetJets"
+    ]
+  },
+  "occidental-petroleum": {
+    "name": "西方石油",
+    "english_name": "Occidental Petroleum",
+    "ticker": "OXY",
+    "category": "核心持仓",
+    "aliases": [
+      "西方石油",
+      "Occidental Petroleum",
+      "Occidental"
+    ]
+  },
+  "petrochina": {
+    "name": "中国石油",
+    "english_name": "PetroChina",
+    "ticker": "PTR",
+    "category": "国际组合",
+    "aliases": [
+      "中国石油",
+      "PetroChina",
+      "PetroChina Company"
+    ]
+  },
+  "precision-castparts": {
+    "name": "精密铸件",
+    "english_name": "Precision Castparts",
+    "category": "全资业务",
+    "aliases": [
+      "精密铸件",
+      "Precision Castparts"
+    ]
+  },
+  "rc-willey": {
+    "name": "威利家居",
+    "english_name": "RC Willey Home Furnishings",
+    "category": "全资业务",
+    "aliases": [
+      "威利家居",
+      "R.C. Willey",
+      "RC Willey"
+    ]
+  },
+  "salomon": {
+    "name": "所罗门",
+    "english_name": "Salomon Inc.",
+    "category": "金融与银行",
+    "aliases": [
+      "所罗门",
+      "Salomon",
+      "Salomon Inc.",
+      "Salomon Inc"
+    ]
+  },
+  "scott-fetzer": {
+    "name": "斯科特费泽",
+    "english_name": "Scott Fetzer",
+    "category": "全资业务",
+    "aliases": [
+      "斯科特费泽",
+      "Scott Fetzer",
+      "Scott Fetzer Manufacturing Group"
+    ]
+  },
+  "sees-candies": {
+    "name": "喜诗糖果",
+    "english_name": "See's Candies",
+    "category": "全资业务",
+    "aliases": [
+      "喜诗糖果",
+      "See's Candies",
+      "See's"
+    ]
+  },
+  "state-farm": {
+    "name": "州立农业保险",
+    "english_name": "State Farm",
+    "category": "保险体系",
+    "aliases": [
+      "州立农业保险",
+      "State Farm"
+    ]
+  },
+  "us-bancorp": {
+    "name": "美国合众银行",
+    "english_name": "U.S. Bancorp",
+    "ticker": "USB",
+    "category": "金融与银行",
+    "aliases": [
+      "美国合众银行",
+      "U.S. Bancorp",
+      "US Bancorp"
+    ]
+  },
+  "verizon": {
+    "name": "威瑞森通讯",
+    "english_name": "Verizon Communications",
+    "ticker": "VZ",
+    "category": "历史案例",
+    "aliases": [
+      "威瑞森通讯",
+      "Verizon Communications",
+      "Verizon"
     ]
   },
   "washington-post": {
     "name": "华盛顿邮报",
+    "english_name": "The Washington Post Company",
+    "category": "历史案例",
     "aliases": [
       "华盛顿邮报",
       "Washington Post",
       "The Washington Post Company"
     ]
   },
-  "geico": {
-    "name": "盖可保险",
+  "wells-fargo": {
+    "name": "富国银行",
+    "english_name": "Wells Fargo & Company",
+    "ticker": "WFC",
+    "category": "金融与银行",
     "aliases": [
-      "盖可保险",
-      "GEICO",
-      "GEICO Corporation"
+      "富国银行",
+      "Wells Fargo",
+      "Wells Fargo & Company"
+    ]
+  },
+  "wesco": {
+    "name": "韦斯科",
+    "english_name": "Wesco Financial",
+    "category": "伯克希尔体系",
+    "aliases": [
+      "韦斯科",
+      "Wesco",
+      "Wesco Financial"
+    ]
+  },
+  "world-book": {
+    "name": "世界图书百科全书",
+    "english_name": "World Book",
+    "category": "全资业务",
+    "aliases": [
+      "世界图书百科全书",
+      "World Book",
+      "World Book Encyclopedia"
     ]
   }
 }

@@ -18,6 +18,10 @@
     {
       "year": 1988,
       "summary": "巴菲特明确写到股票市场不如过去二十四年有吸引力，并购市场也更贵，说明可口可乐不是捡漏式交易，而是少数能承接大额资本的高质量机会。"
+    },
+    {
+      "year": 1989,
+      "summary": "真正触发出手的并不是一时便宜，而是巴菲特终于把 Goizueta 领导下的新可口可乐，与自己长期观察到的全球品牌力量连接到了一起。"
     }
   ],
   "valuation_checkpoints": [
@@ -54,6 +58,24 @@
     "Goizueta 与 Keough 主导的管理层重塑，让可口可乐在 1980 年代进入新的扩张阶段。",
     "业务可预测、资本回报高、分红增长强，适合长期大额持有。"
   ],
+  "what_happened_next": [
+    {
+      "year": 1989,
+      "summary": "一年内仓位继续扩大到 23,350,000 股，巴菲特开始公开解释自己为什么终于看懂这家公司。"
+    },
+    {
+      "year": 1991,
+      "summary": "三年后，可口可乐单一持仓的市值已超过 1988 年建仓时整个伯克希尔的净资产。"
+    },
+    {
+      "year": 1994,
+      "summary": "七年建仓完成，总成本约 13 亿美元，随后案例逐渐从“买入”转为“为什么不卖”。"
+    },
+    {
+      "year": 2022,
+      "summary": "1994 年的 7,500 万美元股息到 2022 年增长到 7.04 亿美元，长期持有逻辑被极端清晰地验证。"
+    }
+  ],
   "hold_logic": [
     "巴菲特在 2023 年仍明确表示对 Coke 一股未动，并预计继续不动。",
     "他把 Coke 和 AmEx 当成“真正优秀企业”的代表，认为耐心持有优于频繁交易。",
@@ -87,28 +109,28 @@
       "page": 13,
       "tag": "thesis",
       "claim": "巴菲特的 thesis 核心是管理层重塑后的全球品牌扩张。",
-      "excerpt": "Only in the summer of 1988 did my brain finally establish contact with my eyes ... Coca-Cola had in 1981 become a new company with the move of Roberto Goizueta to CEO."
+      "excerpt": "my brain finally established contact with my eyes"
     },
     {
       "year": 1991,
       "page": 1,
       "tag": "validation",
       "claim": "这笔投资在买入后三年内就明显推动了伯克希尔净值增长。",
-      "excerpt": "When we loaded up on Coke three years ago, Berkshire's net worth was $3.4 billion; now our Coke stock alone is worth more than that."
+      "excerpt": "our Coke stock alone is worth more than that"
     },
     {
       "year": 2022,
       "page": 3,
       "tag": "valuation",
       "claim": "1994-2022 的股息和市值结果可被直接引用。",
-      "excerpt": "The total cost was $1.3 billion ... The cash dividend we received from Coke in 1994 was $75 million. By 2022, the dividend had increased to $704 million."
+      "excerpt": "the dividend had increased to $704 million"
     },
     {
       "year": 2023,
       "page": 8,
       "tag": "hold",
       "claim": "2023 年仍未买卖，并再次重申优秀企业应长期持有。",
-      "excerpt": "we did not buy or sell a share of either AMEX or Coke ... When you find a truly wonderful business, stick with it."
+      "excerpt": "did not buy or sell a share of either AMEX or Coke"
     }
   ]
 }

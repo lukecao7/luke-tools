@@ -1,0 +1,140 @@
+{
+  "id": "conocophillips-2006-2009",
+  "company_id": "conocophillips",
+  "title": "康菲石油：2006-2009 的周期顶点误判与卖出修正",
+  "status": "historical",
+  "case_type": "mistake-and-exit",
+  "buy_window": {
+    "start_year": 2006,
+    "end_year": 2008,
+    "completed_label": "2008 peak-sized position"
+  },
+  "summary": {
+    "one_liner": "ConocoPhillips 是少见的巴菲特亲口认错案例：他在能源价格接近顶部时大举买入，随后承认 timing 糟糕，并把资金转去更高确定性的机会。",
+    "cost_basis_total_usd_m": 7008,
+    "current_state": "largely sold down"
+  },
+  "market_context": [
+    {
+      "year": 2008,
+      "summary": "巴菲特承认自己在油气价格接近峰值时买入了大量 ConocoPhillips，并且没有预料到下半年能源价格的剧烈下跌。"
+    },
+    {
+      "year": 2009,
+      "summary": "金融危机之后，债券、优先股与整笔并购出现了更高确定性的机会，这让继续持有 Conoco 的机会成本迅速上升。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 2006,
+      "label": "initial disclosed position",
+      "shares": 17938100,
+      "cost_usd_m": 1066,
+      "market_value_usd_m": 1291
+    },
+    {
+      "year": 2007,
+      "label": "position maintained",
+      "shares": 17508700,
+      "cost_usd_m": 1039,
+      "market_value_usd_m": 1546
+    },
+    {
+      "year": 2008,
+      "label": "peak-sized position before collapse",
+      "shares": 84896273,
+      "cost_usd_m": 7008,
+      "market_value_usd_m": 4398
+    },
+    {
+      "year": 2009,
+      "label": "sold down after admitting error",
+      "shares": 37711330,
+      "cost_usd_m": 2741,
+      "market_value_usd_m": 1926
+    },
+    {
+      "year": 2010,
+      "label": "position reduced further",
+      "shares": 29109637,
+      "cost_usd_m": 2028,
+      "market_value_usd_m": 1982
+    }
+  ],
+  "what_happened_next": [
+    {
+      "year": 2008,
+      "summary": "巴菲特把这笔投资定义成自己“最突出的重大错误”，并承认糟糕的 timing 让伯克希尔损失了数十亿美元。"
+    },
+    {
+      "year": 2009,
+      "summary": "伯克希尔把 Conoco 列入当年最大卖出对象，为 Dow、Swiss Re 和 BNSF 等更高把握度机会腾挪现金。"
+    },
+    {
+      "year": 2010,
+      "summary": "仓位继续缩小，说明这不是短期波动中的被动缩水，而是持续的资本再配置。"
+    }
+  ],
+  "thesis": [
+    "这笔交易最初更多受宏观油价判断驱动，而不是自下而上的明确价格优势。",
+    "错误并不只是价格下跌，而是持仓规模在高油价环境下被放大得过头。",
+    "真正可取的部分在于认错之后，资本被迅速调往更高确定性的机会。"
+  ],
+  "hold_logic": [
+    "巴菲特没有因为此前投入巨大就死守仓位，而是把未来回报与更优替代项放在一起重新比较。",
+    "当市场环境变化、机会集发生切换时，卖出也是资本配置的一部分。",
+    "这个 case 更适合被当作“错误如何被处理”来看，而不是“能源公司如何长期持有”来看。"
+  ],
+  "exit_logic": {
+    "type": "sold",
+    "summary": "承认 timing 错误后，伯克希尔持续减仓 ConocoPhillips，用现金去支持危机期更高确定性的债券、优先股与 BNSF 并购。"
+  },
+  "known_gaps": [
+    "当前语料没有细到每一笔季度级减仓动作，只能重建年报层面的仓位轨迹。",
+    "若要继续深挖，还应补入能源价格曲线与康菲当时资本开支环境。"
+  ],
+  "citations": [
+    {
+      "year": 2006,
+      "page": 14,
+      "tag": "buy",
+      "claim": "Conoco 在 2006 年已成为伯克希尔的披露持仓之一。",
+      "excerpt": "17,938,100 Conoco Phillips ... 1,066 1,291"
+    },
+    {
+      "year": 2008,
+      "page": 14,
+      "tag": "valuation",
+      "claim": "到 2008 年底，这笔仓位已放大到 70 亿美元成本，却只剩 43.98 亿市值。",
+      "excerpt": "84,896,273 ConocoPhillips ... 7,008 4,398"
+    },
+    {
+      "year": 2008,
+      "page": 15,
+      "tag": "sell",
+      "claim": "巴菲特公开把这笔投资称为重大错误。",
+      "excerpt": "a major mistake of commission"
+    },
+    {
+      "year": 2008,
+      "page": 15,
+      "tag": "market-context",
+      "claim": "错误的关键在于买入时点太靠近油气价格峰值。",
+      "excerpt": "oil and gas prices were near their peak"
+    },
+    {
+      "year": 2009,
+      "page": 13,
+      "tag": "sell",
+      "claim": "ConocoPhillips 被列入 2009 年最大的卖出对象之一。",
+      "excerpt": "our largest sales were in ConocoPhillips"
+    },
+    {
+      "year": 2009,
+      "page": 13,
+      "tag": "hold",
+      "claim": "减仓的目的不是情绪化止损，而是给更优机会腾出现金。",
+      "excerpt": "to raise cash for our Dow and Swiss Re purchases"
+    }
+  ]
+}

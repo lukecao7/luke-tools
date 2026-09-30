@@ -1,10 +1,14 @@
 # Buffett Letters Workbench
 
-这个目录现在不只是年报 PDF，也多了一套把股东信整理成「投资案例研究」的基础工具。
+这个目录现在既保留了原始年报 PDF，也带了一套站点构建脚本。
 
 ## 目标
 
-相比普通的公司介绍页，这套工作流更适合回答下面四类问题：
+当前默认部署模式是先完整镜像参考站，再在此基础上讨论怎么做增强版研究页。
+
+如果后续回到增强研究模式，本地也保留了对应脚本和数据结构。
+
+相比普通的公司介绍页，增强模式更适合回答下面四类问题：
 
 - 巴菲特是在什么环境里开始买入的
 - 他买入时看到的价值锚点是什么
@@ -19,10 +23,10 @@
 python3 -m pip install -r requirements.txt
 ```
 
-构建静态站：
+构建当前默认站点镜像：
 
 ```bash
-python3 scripts/build_site.py
+python3 scripts/mirror_reference_site.py
 ```
 
 构建结果会输出到 `dist/`，仓库里已经带好了 GitHub Pages workflow：
@@ -51,6 +55,8 @@ python3 scripts/company_evidence.py --company coca-cola --out output/coca_cola_e
   基于公司别名，从逐页文本里抽出时间线证据和持仓表格行。
 - `scripts/build_site.py`
   把 `data/` 里的公司、案例、人物、概念数据编译成可部署的静态站。
+- `scripts/mirror_reference_site.py`
+  把公开参考站按原始目录结构镜像到 `dist/`，优先保持页面内容和跳链一致。
 - `data/company_aliases.json`
   公司别名配置，后续可以继续补。
 - `data/cases/*.json`

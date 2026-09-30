@@ -1,0 +1,10 @@
+.runtime/
+data/
+tmp/
+tests/
+*.png
+长文伴读-MVP-PRD.md
+
+.env*
+*.md
+*.py

@@ -1,0 +1,21 @@
+{
+  "id": "geico",
+  "name": "盖可保险",
+  "ticker": "GEICO",
+  "kind": "company",
+  "summary": "直接保险的低成本机器，也是巴菲特把经营护城河与保险浮存金结合到一起的标志性案例。",
+  "related_people": [
+    "warren-buffett",
+    "jack-byrne",
+    "tony-nicely"
+  ],
+  "related_concepts": [
+    "moat",
+    "capital-allocation",
+    "long-term-holding",
+    "insurance-float"
+  ],
+  "cases": [
+    "geico-1995-1996"
+  ]
+}

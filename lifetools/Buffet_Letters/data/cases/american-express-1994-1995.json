@@ -18,6 +18,10 @@
     {
       "year": 1994,
       "summary": "巴菲特把这次加大持仓描述为增加对熟悉且喜欢的业务的经济权益，而不是短期行情交易。"
+    },
+    {
+      "year": 2022,
+      "summary": "几十年后回看，巴菲特仍把 AmEx 视为一笔能够用股息和回购持续提升经济权益的典型复利型持仓。"
     }
   ],
   "valuation_checkpoints": [
@@ -47,6 +51,20 @@
     "美国运通是全球金融信用品牌，需求具有长期性。",
     "巴菲特愿意增加自己熟悉且喜欢的业务的经济权益。",
     "股票回购会在不追加成本的情况下提高伯克希尔的持股占比。"
+  ],
+  "what_happened_next": [
+    {
+      "year": 1995,
+      "summary": "普通股建仓基本完成，持股达到 49,456,900 股，成本约 13.9 亿美元。"
+    },
+    {
+      "year": 2022,
+      "summary": "巴菲特在股东信里直接回顾：总成本约 13 亿美元，而年度股息已从 4,100 万美元增至 3.02 亿美元。"
+    },
+    {
+      "year": 2023,
+      "summary": "AmEx 与 Coke 一起被作为“找到伟大企业后继续持有”的例子再次提出。"
+    }
   ],
   "hold_logic": [
     "2023 年巴菲特再次把 AmEx 与 Coke 并列为应长期持有的优秀企业。",
@@ -88,14 +106,14 @@
       "page": 4,
       "tag": "valuation",
       "claim": "2022 年直接回顾了 1995 年完成建仓、13 亿成本、302 百万美元股息。",
-      "excerpt": "Berkshire’s purchases of Amex were essentially completed in 1995 and, coincidentally, also cost $1.3 billion. Annual dividends ... grew from $41 million to $302 million."
+      "excerpt": "cost $1.3 billion ... grew from $41 million to $302 million"
     },
     {
       "year": 2023,
       "page": 8,
       "tag": "hold",
       "claim": "2023 年没有买卖，并将 AmEx 与 Coke 作为长期持有的代表案例。",
-      "excerpt": "we did not buy or sell a share of either AMEX or Coke ... Patience pays"
+      "excerpt": "did not buy or sell a share of either AMEX or Coke"
     }
   ]
 }

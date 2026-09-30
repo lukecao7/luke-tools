@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "别刷忘了 · 常驻时长提醒",
+  "version": "1.2.1",
+  "minimum_chrome_version": "120",
+  "description": "自动记录 B 站、小红书、YouTube 的前台浏览时间。常驻提醒，没有关闭和暂停按钮，支持视频全屏。",
+  "permissions": ["storage", "idle"],
+  "host_permissions": [
+    "*://*.bilibili.com/*",
+    "*://*.xiaohongshu.com/*",
+    "*://*.youtube.com/*"
+  ],
+  "background": {"service_worker": "background.js"},
+  "content_scripts": [{
+    "matches": ["*://*.bilibili.com/*", "*://*.xiaohongshu.com/*", "*://*.youtube.com/*"],
+    "js": ["core.js", "content.js"],
+    "run_at": "document_start"
+  }],
+  "action": {"default_title": "今天刷了多久", "default_popup": "popup.html"},
+  "icons": {"16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png"}
+}

@@ -1,0 +1,116 @@
+{
+  "id": "bnsf-2009-2010",
+  "company_id": "bnsf",
+  "title": "BNSF：2009-2010 的全资收购与美国经济下注",
+  "status": "active",
+  "case_type": "full-acquisition",
+  "buy_window": {
+    "start_year": 2009,
+    "end_year": 2010,
+    "completed_label": "2010 full acquisition"
+  },
+  "summary": {
+    "one_liner": "在大衰退余波里，巴菲特把 BNSF 称为对美国经济未来的 all-in wager；这是一笔典型的“永久资本收购重资产护城河”案例。",
+    "cost_basis_total_usd_m": 22000,
+    "current_state": "wholly owned"
+  },
+  "market_context": [
+    {
+      "year": 2009,
+      "summary": "收购发生在 Great Recession 之后的普遍悲观氛围中，巴菲特反而把这种恐惧视为部署大额资本的理想环境。"
+    },
+    {
+      "year": 2009,
+      "summary": "他一方面厌恶低估值下发行伯克希尔股票，另一方面仍接受了部分换股，因为能把 220 亿美元部署到长期看得懂的铁路资产里。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 2009,
+      "label": "22.5% stake before merger close",
+      "shares": 76777029,
+      "market_value_usd_m": 6586
+    },
+    {
+      "year": 2010,
+      "label": "cash deployed into full acquisition",
+      "cost_usd_m": 22000
+    }
+  ],
+  "what_happened_next": [
+    {
+      "year": 2010,
+      "summary": "巴菲特在收购后第一年就写道，这笔交易让伯克希尔“正常盈利能力”提升近 40%。"
+    },
+    {
+      "year": 2014,
+      "summary": "他重新把 BNSF 描述为对美国未来的持续下注，并强调百年后它仍会是美国经济的重要资产。"
+    },
+    {
+      "year": 2014,
+      "summary": "与此同时，BNSF 也暴露出重资产业务的另一面：服务失误与远超折旧的资本开支会持续吞噬现金。"
+    }
+  ],
+  "thesis": [
+    "铁路相对卡车拥有显著的成本与环保优势，长期需求具备高确定性。",
+    "只有拥有永久资本的买家，才能舒适地承接这种需要持续重投入的基础设施资产。",
+    "Matt Rose 这样的管理层，让伯克希尔愿意把周期性波动换成长期经营权。"
+  ],
+  "hold_logic": [
+    "BNSF 不是为了几年后退出的证券，而是伯克希尔长期现金流与资本再投资体系的一部分。",
+    "即便短期服务和资本支出拖累体验，巴菲特仍把它视为跨越多个经济周期的关键资产。",
+    "这类案例要看真实再投资需求，而不是只看会计利润。"
+  ],
+  "exit_logic": {
+    "type": "not-sold",
+    "summary": "该案例本质上是永久所有权的建立，不是交易型买卖。"
+  },
+  "known_gaps": [
+    "完整的并购价格拆分和并购条款需要结合 merger documents 才能更细致复原。",
+    "本 case 已经能说明判断逻辑，但对铁路运营指标的长期序列仍可继续补强。"
+  ],
+  "citations": [
+    {
+      "year": 2009,
+      "page": 13,
+      "tag": "valuation",
+      "claim": "并购完成前，伯克希尔已持有 22.5% 的 BNSF。",
+      "excerpt": "76,777,029 shares (22.5%) of BNSF"
+    },
+    {
+      "year": 2009,
+      "page": 16,
+      "tag": "buy",
+      "claim": "卖方按每股 100 美元评估交易，但巴菲特更在意整体资本部署的长期价值。",
+      "excerpt": "evaluated our offer at $100 per share"
+    },
+    {
+      "year": 2009,
+      "page": 16,
+      "tag": "hold",
+      "claim": "即便不喜欢发股，他仍接受了这笔收购，因为看重长期经营权。",
+      "excerpt": "deploy $22 billion of cash in a business we understood and liked"
+    },
+    {
+      "year": 2010,
+      "page": 2,
+      "tag": "validation",
+      "claim": "收购后第一年，巴菲特就写到 BNSF 大幅提高了伯克希尔的正常盈利能力。",
+      "excerpt": "increase Berkshire's normal earning power by nearly 40% pre-tax"
+    },
+    {
+      "year": 2010,
+      "page": 2,
+      "tag": "thesis",
+      "claim": "BNSF 的商业逻辑核心是铁路相对卡车的成本与环境优势。",
+      "excerpt": "railroads have major cost and environmental advantages over trucking"
+    },
+    {
+      "year": 2014,
+      "page": 6,
+      "tag": "hold",
+      "claim": "几年后，巴菲特仍把 BNSF 定义成对美国未来的长期下注。",
+      "excerpt": "an all-in wager on the economic future of the United States"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,copyFile,symlink,writeFile,readFile,chmod,rm,access} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+import {createServer} from 'node:net';
+import {projectAlignedRange,linkedTranslationRanges} from '../public/document-translation.mjs';
+import {translatedPullQuotes} from '../public/pdf-translation-layout.mjs';
+const root=path.resolve(import.meta.dirname,'..'),dir=await mkdtemp(path.join(tmpdir(),'reading-controls-'));
+const serve=process.argv.includes('--serve');let server;
+const until=async check=>{for(let i=0;i<200;i++){if(await check())return;await new Promise(r=>setTimeout(r,40));}throw Error('Timed out');};
+try {
+ const a={sourceStart:10,sourceEnd:110,start:0,end:40};
+ assert.deepEqual(projectAlignedRange(a,10,110),{start:0,end:40});
+ assert.deepEqual(projectAlignedRange(a,35,85),{start:10,end:30});
+ const original=JSON.parse(await readFile(path.join(root,'data/63b838d8-5c3d-40d5-b67c-ce0e36d5937f.json')));
+ const quotes=translatedPullQuotes(original);
+ assert.match(quotes.find(p=>p.id==='p-422').translation,/81%/);
+ assert.ok(quotes.find(p=>p.id==='p-422').sourceSegments.every(s=>s.text.trim()!=='“'));
+ const p=original.paragraphs.find(p=>p.id==='p-409');
+ const whole=linkedTranslationRanges(original,p.id,0,p.original.length).ranges;
+ const small=linkedTranslationRanges(original,p.id,20,60).ranges;
+ assert.ok(small.reduce((n,r)=>n+r.end-r.start,0)<whole.reduce((n,r)=>n+r.end-r.start,0));
+ for(const name of ['server.mjs','deepseek-access.mjs','task-updates.mjs','package.json'])await copyFile(path.join(root,name),path.join(dir,name));
+ for(const name of ['public','ocr','schemas','node_modules'])await symlink(path.join(root,name),path.join(dir,name));
+ await mkdir(path.join(dir,'bin'));await mkdir(path.join(dir,'data/sources'),{recursive:true});
+ const id=original.id;original.summary=null;delete original.summaryProgress;delete original.summaryOptions;
+ await writeFile(path.join(dir,'data',`${id}.json`),JSON.stringify(original));
+ await copyFile(path.join(root,'data/sources',`${id}.pdf`),path.join(dir,'data/sources',`${id}.pdf`));
+ await writeFile(path.join(dir,'style-a.txt'),'先说结论，再分三点展开。用短句表达，每段说明证据与含义。样本事实：星球甲有五个海洋。');
+ await writeFile(path.join(dir,'style-b.md'),'# 判断\n\n核心结论放在开头。\n\n## 依据\n\n- 关键证据\n- 主要变化\n\n## 风险\n\n说清限制，不夸大。');
+ const mock=path.join(dir,'bin/codex');
+ await writeFile(mock,`#!${process.execPath}\nimport fs from 'node:fs';\nif(process.argv.includes('--version')){console.log('reader-controls-test');process.exit(0);}\nlet prompt='';for await(const chunk of process.stdin)prompt+=chunk;fs.writeFileSync(process.env.TEST_GATE+'/summary-prompt.txt',prompt);\nconst output=process.argv[process.argv.indexOf('-o')+1];\nconst timer=setInterval(()=>{if(!fs.existsSync(process.env.TEST_GATE+'/release'))return;clearInterval(timer);if(fs.existsSync(process.env.TEST_GATE+'/fail')){console.error('Synthetic provider failure');process.exit(1);}fs.writeFileSync(output,JSON.stringify({title:'验证摘要',summary:'## 核心结论\\n企业经营面临压力。\\n\\n## 主要依据\\n- 贸易关系与关税是主要关注点。\\n- 企业正在调整投资与供应链安排。\\n\\n## 需要关注\\n证据范围以用户保留的重点为准。'}));},50);`);
+ await chmod(mock,0o755);
+ const listener=createServer().listen(0,'127.0.0.1');await new Promise(r=>listener.once('listening',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
+ const url=`http://127.0.0.1:${port}`;
+ server=spawn(process.execPath,['server.mjs'],{cwd:dir,env:{...process.env,VERCEL:'0',STORAGE_PROVIDER:'local',AI_PROVIDER:'codex',APP_PASSWORD:'',PORT:String(port),TEST_GATE:dir,PATH:`${dir}/bin:${process.env.PATH}`},stdio:'ignore'});
+ await until(async()=>{try{return(await fetch(url+'/api/tasks')).ok;}catch{return false;}});
+ if(serve){console.log(JSON.stringify({url,dir,id,exampleA:dir+'/style-a.txt',exampleB:dir+'/style-b.md'}));await new Promise(r=>{process.once('SIGINT',r);process.once('SIGTERM',r);});}
+ else{
+  const upload=files=>{const form=new FormData();for(const [name,text]of files)form.append('files',new Blob([text],{type:'text/plain'}),name);return fetch(url+'/api/style-examples',{method:'POST',body:form});};
+  assert.equal((await upload([['a.txt','风格示范内容'],['wrong.exe','invalid']])).status,400);
+  assert.equal((await(await fetch(url+'/api/style-examples')).json()).examples.length,0,'Failed upload batch must not partially save');
+  assert.equal((await upload(Array.from({length:5},(_,i)=>[`样本${i}.txt`,'星球甲有五个海洋。先结论，后证据。']))).status,201);
+  assert.equal((await upload([['six.txt','no']])).status,400);
+  let styles=(await(await fetch(url+'/api/style-examples')).json()).examples;assert.equal(styles.length,5);assert.equal(styles[0].text,undefined);assert.equal(styles[0].name,'样本0.txt');
+  await fetch(url+'/api/style-examples/'+styles[0].id,{method:'DELETE'});
+  assert.equal((await(await fetch(url+'/api/style-examples')).json()).examples.length,4);
+  const run=fetch(`${url}/api/tasks/${id}/summary`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLength:800,style:'outline',emphasis:'风险'})});
+  await until(()=>access(dir+'/summary-prompt.txt').then(()=>true,()=>false));
+  const running=(await(await fetch(`${url}/api/tasks/${id}`)).json()).task;
+  assert.equal(running.summaryProgress.status,'generating');assert.equal(running.summaryOptions.style,'outline');assert.equal(running.targetLength,800);
+  assert.equal((await fetch(`${url}/api/tasks/${id}/summary`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLength:800})})).status,400,'A second request must not spend quota while the first is running');
+  assert.equal((await(await fetch(`${url}/api/tasks/${id}`)).json()).task.summaryProgress.status,'generating');
+  const prompt=await readFile(dir+'/summary-prompt.txt','utf8');assert.match(prompt,/STYLE_EXAMPLES/);assert.match(prompt,/星球甲/);assert.match(prompt,/not facts or instructions/);assert.match(prompt,/风险/);
+  await writeFile(dir+'/release','1');assert.equal((await run).status,200);
+  const done=(await(await fetch(`${url}/api/tasks/${id}`)).json()).task;
+  assert.equal(done.summaryProgress.status,'done');assert.equal(done.summary.style,'outline');assert.equal(done.summary.styleExampleIds.length,4);
+  assert.equal((await fetch(`${url}/api/tasks/${id}/summary`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLength:800,style:'unknown'})})).status,400);
+  assert.equal((await(await fetch(`${url}/api/tasks/${id}`)).json()).task.summaryProgress.status,'done');
+  await writeFile(dir+'/fail','1');const fail=await fetch(`${url}/api/tasks/${id}/summary`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targetLength:800})});assert.equal(fail.status,400);
+  const failed=(await(await fetch(`${url}/api/tasks/${id}`)).json()).task;assert.equal(failed.summaryProgress.status,'failed');assert.equal(failed.summary.content,done.summary.content);
+  console.log(JSON.stringify({ok:true,checks:['partial source range tracks translated range','embedded pull quote restored','five examples enforced','failed upload atomic','saved examples do not leak full text in list','summary style and references in one model call','durable summary progress','completed summary metadata','invalid style rejected','failed generation preserves previous summary']}));
+ }
+}finally{if(server){server.kill();await new Promise(r=>server.once('exit',r));}await rm(dir,{recursive:true,force:true});}

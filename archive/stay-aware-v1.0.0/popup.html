@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>别刷忘了</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header><img src="icons/48.png" width="28" height="28" alt=""><div><h1>别刷忘了</h1><p>时间看得见，才记得停一停。</p></div></header>
+  <main>
+    <section class="total"><span>今天，三个网站一共用了</span><strong id="total">00:00:00</strong><small id="status">正在读取记录</small></section>
+    <section class="sites" id="sites" aria-label="各网站今日使用时长"></section>
+    <section class="history"><h2>最近的记录</h2><div id="history"></div></section>
+    <p class="explain">只统计前台浏览；切换应用、后台标签页和锁屏期间不计时。看视频时持续计时。</p>
+  </main>
+  <footer>提醒条始终显示，可拖动调整位置。<br>记录只保存在本机，保留最近 90 个使用日。</footer>
+  <script src="core.js"></script><script src="popup.js"></script>
+</body></html>

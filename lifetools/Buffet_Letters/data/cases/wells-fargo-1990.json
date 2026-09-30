@@ -1,0 +1,133 @@
+{
+  "id": "wells-fargo-1990",
+  "company_id": "wells-fargo",
+  "title": "富国银行：1990 年银行恐慌中的高质量买入",
+  "status": "historical",
+  "case_type": "panic-repricing",
+  "buy_window": {
+    "start_year": 1989,
+    "end_year": 1990,
+    "completed_label": "1990 position built to just under 10%"
+  },
+  "summary": {
+    "one_liner": "这是一笔典型的“在全行业被怀疑时，只买最好管理层”的交易：巴菲特用不到 5 倍税后利润的价格买到了 Wells Fargo 近 10% 的权益。",
+    "cost_basis_total_usd_m": 290,
+    "current_state": "later expanded before eventual exit"
+  },
+  "market_context": [
+    {
+      "year": 1990,
+      "summary": "银行股处在混乱与普遍不信任中，投资者已不再相信行业数字，板块整体遭到抛售。"
+    },
+    {
+      "year": 1990,
+      "summary": "巴菲特明确区分了“便宜但差的银行”和“公平价格下的优秀银行”，并只愿为后者下注。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 1990,
+      "label": "initial 10% position",
+      "shares": 5000000,
+      "cost_usd_m": 289.431,
+      "market_value_usd_m": 289.375
+    },
+    {
+      "year": 1991,
+      "label": "stress year, position held",
+      "shares": 5000000,
+      "cost_usd_m": 289.431,
+      "market_value_usd_m": 290.0
+    },
+    {
+      "year": 1992,
+      "label": "added during recovery",
+      "shares": 6358418,
+      "cost_usd_m": 380.983,
+      "market_value_usd_m": 485.624
+    },
+    {
+      "year": 1994,
+      "label": "13.3% ownership validated",
+      "shares": 6791218,
+      "cost_usd_m": 423.68,
+      "market_value_usd_m": 984.727
+    }
+  ],
+  "what_happened_next": [
+    {
+      "year": 1991,
+      "summary": "Wells 当年确实经历压力，巴菲特承认结果比预期差，但这仍属于他事先设想过的低概率压力情景。"
+    },
+    {
+      "year": 1992,
+      "summary": "随着信用压力缓解，伯克希尔继续加仓，持股比例提高到 11.5%。"
+    },
+    {
+      "year": 1994,
+      "summary": "巴菲特把这笔持股形容为一座 70 亿美元的“伯克希尔银行”，说明 case 已从逆向下注进入经营验证阶段。"
+    }
+  ],
+  "thesis": [
+    "高杠杆行业里，管理层质量比静态便宜更重要。",
+    "Carl Reichardt 与 Paul Hazen 的成本纪律和聚焦经营，是买入逻辑的核心。",
+    "在恐慌定价下，以不到 5 倍税后利润买到优质银行，赔率极不对称。"
+  ],
+  "hold_logic": [
+    "即便 1991 年遭遇压力，巴菲特也没有把短期信用波动误判成管理层或商业模式失效。",
+    "随着 case 被验证，伯克希尔反而继续增持，而不是在短期反弹时退出。",
+    "这类案例的关键不是抄底最低点，而是在混乱中判断谁值得穿越周期。"
+  ],
+  "exit_logic": {
+    "type": "later-exit-not-covered",
+    "summary": "当前语料最完整支持的是 1990 年建仓与 1990 年代前中期的验证；最终退出并不是本 case 的证据重点。"
+  },
+  "known_gaps": [
+    "本 case 没有展开伯克希尔后来完全退出 Wells Fargo 的全部路径。",
+    "如果要写完整版本，应补入后期监管与公司治理问题对卖出判断的影响。"
+  ],
+  "citations": [
+    {
+      "year": 1990,
+      "page": 11,
+      "tag": "buy",
+      "claim": "1990 年把持股提高到接近无需联储审批上限的水平。",
+      "excerpt": "increased our ownership to just under 10%"
+    },
+    {
+      "year": 1990,
+      "page": 12,
+      "tag": "market-context",
+      "claim": "买入发生在典型的银行股混乱期。",
+      "excerpt": "a chaotic market in bank stocks"
+    },
+    {
+      "year": 1990,
+      "page": 12,
+      "tag": "valuation",
+      "claim": "这笔投资的价值锚极其清晰：不到 5 倍税后盈利。",
+      "excerpt": "less than five times after-tax earnings"
+    },
+    {
+      "year": 1990,
+      "page": 12,
+      "tag": "thesis",
+      "claim": "巴菲特把 Wells 的核心押注点写成了管理层质量。",
+      "excerpt": "the best managers in the business"
+    },
+    {
+      "year": 1994,
+      "page": 2,
+      "tag": "validation",
+      "claim": "几年后，巴菲特已把这笔持股视作一座“伯克希尔银行”。",
+      "excerpt": "a $7 billion \"Berkshire Bank\""
+    },
+    {
+      "year": 1994,
+      "page": 13,
+      "tag": "hold",
+      "claim": "1994 年市值已显著高于成本，验证了 1990 年恐慌中的赔率。",
+      "excerpt": "423,680 ... 984,727"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "translation": { "type": "string" },
+          "original_highlights": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "translation_highlights": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": ["id", "translation", "original_highlights", "translation_highlights"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["results"],
+  "additionalProperties": false
+}

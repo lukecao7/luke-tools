@@ -1,0 +1,21 @@
+{
+  "id": "bnsf",
+  "name": "BNSF铁路",
+  "ticker": "N/A",
+  "kind": "company",
+  "summary": "BNSF 是把巴菲特“押注美国经济未来”这句话变成真钱的案例，也是永久资本拥抱重资产护城河的样板。",
+  "related_people": [
+    "warren-buffett",
+    "charlie-munger",
+    "matt-rose"
+  ],
+  "related_concepts": [
+    "capital-allocation",
+    "long-term-holding",
+    "capital-intensity",
+    "moat"
+  ],
+  "cases": [
+    "bnsf-2009-2010"
+  ]
+}

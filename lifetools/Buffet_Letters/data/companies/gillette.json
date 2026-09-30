@@ -1,0 +1,21 @@
+{
+  "id": "gillette",
+  "name": "吉列",
+  "ticker": "N/A",
+  "kind": "company",
+  "summary": "这是一个典型的“公司看对了、结构做错了”的巴菲特案例：伟大品牌没错，但过度设计交易条款反而损失了上行。",
+  "related_people": [
+    "warren-buffett",
+    "charlie-munger",
+    "colman-mockler"
+  ],
+  "related_concepts": [
+    "brand",
+    "moat",
+    "management-quality",
+    "mistake-review"
+  ],
+  "cases": [
+    "gillette-1989"
+  ]
+}
