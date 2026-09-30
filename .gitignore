@@ -1,0 +1,14 @@
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+.runtime/
+.vercel/
+.next/
+.env
+.env.*
+!.env.example
+longform-reader/data/
+longform-reader/tmp/
