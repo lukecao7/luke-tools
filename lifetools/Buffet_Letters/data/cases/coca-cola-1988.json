@@ -1,0 +1,114 @@
+{
+  "id": "coca-cola-1988",
+  "company_id": "coca-cola",
+  "title": "可口可乐：1988-1994 的伟大企业建仓案例",
+  "status": "active",
+  "case_type": "wonderful-business-at-fair-price",
+  "buy_window": {
+    "start_year": 1988,
+    "end_year": 1994,
+    "completed_label": "1994-08 completed"
+  },
+  "summary": {
+    "one_liner": "在市场机会并不宽松的背景下，巴菲特用七年时间完成对可口可乐的长期建仓，并把它当成几乎不需要卖出的全球品牌资产。",
+    "cost_basis_total_usd_m": 1299,
+    "current_state": "still holding"
+  },
+  "market_context": [
+    {
+      "year": 1988,
+      "summary": "巴菲特明确写到股票市场不如过去二十四年有吸引力，并购市场也更贵，说明可口可乐不是捡漏式交易，而是少数能承接大额资本的高质量机会。"
+    }
+  ],
+  "valuation_checkpoints": [
+    {
+      "year": 1988,
+      "label": "initial disclosed position",
+      "shares": 14172500,
+      "cost_usd_m": 592.54,
+      "market_value_usd_m": 632.448
+    },
+    {
+      "year": 1989,
+      "label": "continued building",
+      "shares": 23350000,
+      "cost_usd_m": 1023.92,
+      "market_value_usd_m": 1803.787
+    },
+    {
+      "year": 1994,
+      "label": "completed seven-year purchase",
+      "shares": 400000000,
+      "cost_usd_m": 1300,
+      "dividend_usd_m": 75
+    },
+    {
+      "year": 2022,
+      "label": "long-duration result",
+      "market_value_usd_m": 25000,
+      "dividend_usd_m": 704
+    }
+  ],
+  "thesis": [
+    "全球品牌和轻资产糖浆模式构成强护城河。",
+    "Goizueta 与 Keough 主导的管理层重塑，让可口可乐在 1980 年代进入新的扩张阶段。",
+    "业务可预测、资本回报高、分红增长强，适合长期大额持有。"
+  ],
+  "hold_logic": [
+    "巴菲特在 2023 年仍明确表示对 Coke 一股未动，并预计继续不动。",
+    "他把 Coke 和 AmEx 当成“真正优秀企业”的代表，认为耐心持有优于频繁交易。",
+    "股息增长与回购共同提升伯克希尔的经济权益。"
+  ],
+  "exit_logic": {
+    "type": "not-sold",
+    "summary": "该案例重点不在卖出，而在为什么长期不卖。"
+  },
+  "known_gaps": [
+    "本地语料只能从 1977 年以后追踪，可口可乐在更早年份的消费者观察无法直接用原始股东信交叉验证。",
+    "本案例目前主要来自股东信与后续回顾，尚未并入外部价格序列。"
+  ],
+  "citations": [
+    {
+      "year": 1988,
+      "page": 1,
+      "tag": "market-context",
+      "claim": "买入时外部市场并不便宜。",
+      "excerpt": "less attractive stock market ... far more richly-priced market for the acquisition of businesses"
+    },
+    {
+      "year": 1988,
+      "page": 12,
+      "tag": "buy",
+      "claim": "1988 年已把 Coca-Cola 视为长期持有的重大买入。",
+      "excerpt": "In 1988 we made major purchases of Federal Home Loan Mortgage Pfd. and Coca Cola. We expect to hold these securities for a long time."
+    },
+    {
+      "year": 1989,
+      "page": 13,
+      "tag": "thesis",
+      "claim": "巴菲特的 thesis 核心是管理层重塑后的全球品牌扩张。",
+      "excerpt": "Only in the summer of 1988 did my brain finally establish contact with my eyes ... Coca-Cola had in 1981 become a new company with the move of Roberto Goizueta to CEO."
+    },
+    {
+      "year": 1991,
+      "page": 1,
+      "tag": "validation",
+      "claim": "这笔投资在买入后三年内就明显推动了伯克希尔净值增长。",
+      "excerpt": "When we loaded up on Coke three years ago, Berkshire's net worth was $3.4 billion; now our Coke stock alone is worth more than that."
+    },
+    {
+      "year": 2022,
+      "page": 3,
+      "tag": "valuation",
+      "claim": "1994-2022 的股息和市值结果可被直接引用。",
+      "excerpt": "The total cost was $1.3 billion ... The cash dividend we received from Coke in 1994 was $75 million. By 2022, the dividend had increased to $704 million."
+    },
+    {
+      "year": 2023,
+      "page": 8,
+      "tag": "hold",
+      "claim": "2023 年仍未买卖，并再次重申优秀企业应长期持有。",
+      "excerpt": "we did not buy or sell a share of either AMEX or Coke ... When you find a truly wonderful business, stick with it."
+    }
+  ]
+}

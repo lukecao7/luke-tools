@@ -1,0 +1,24 @@
+{
+  "id": "coca-cola",
+  "name": "可口可乐",
+  "ticker": "KO",
+  "kind": "company",
+  "summary": "全球品牌消费品公司，在巴菲特体系里是“以合理价格买入伟大企业”的标志性案例。",
+  "first_mention_year": 1985,
+  "latest_mention_year": 2024,
+  "related_people": [
+    "warren-buffett",
+    "charlie-munger",
+    "roberto-goizueta",
+    "don-keough"
+  ],
+  "related_concepts": [
+    "moat",
+    "brand",
+    "capital-allocation",
+    "long-term-holding"
+  ],
+  "cases": [
+    "coca-cola-1988"
+  ]
+}

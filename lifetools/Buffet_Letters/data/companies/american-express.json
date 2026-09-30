@@ -1,0 +1,22 @@
+{
+  "id": "american-express",
+  "name": "美国运通",
+  "ticker": "AXP",
+  "kind": "company",
+  "summary": "全球金融信用品牌，在巴菲特体系里兼具危机买入、长期持有和回购增持三个层次。",
+  "first_mention_year": 1980,
+  "latest_mention_year": 2024,
+  "related_people": [
+    "warren-buffett",
+    "charlie-munger"
+  ],
+  "related_concepts": [
+    "brand",
+    "financial-trust",
+    "crisis-opportunity",
+    "long-term-holding"
+  ],
+  "cases": [
+    "american-express-1994-1995"
+  ]
+}
