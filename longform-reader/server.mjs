@@ -35,7 +35,7 @@ const CODEX_MODEL = process.env.CODEX_MODEL || "gpt-6.1-sol";
 const bundledCodex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex";
 const CODEX_BIN = process.env.CODEX_BIN || (process.platform === "darwin" && existsSync(bundledCodex) ? bundledCodex : "codex");
 const CODEX_SERVICE_TIER = "default";
-const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || "low";
+const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || "medium";
 const STYLE_KEY = "longform-reading/settings/style-examples.json";
 const STYLE_FILE = path.join(DATA_DIR, "settings", "style-examples.json");
 const SUMMARY_RUNTIME_ID = randomUUID();

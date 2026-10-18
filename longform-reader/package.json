@@ -8,7 +8,7 @@
     "start": "READING_SPACES=1 node server.mjs",
     "start:background": "node scripts/local-service.mjs start",
     "stop:background": "node scripts/local-service.mjs stop",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/pdf-selection.mjs && node --check public/pdf-scroll-sync.mjs && node --check public/pdf-highlights.mjs && node --check ocr/engine.mjs && node --check public/document-translation.mjs && node --check public/pdf-figures.mjs && node --check public/pdf-figure-layout.mjs && node --check public/pdf-translation-layout.mjs && node --check public/reading-progress.mjs && node --check public/reader-controls.mjs && node --check public/style-examples.mjs && node --check reading-space.mjs && node --check public/reading-space.mjs && node --check public/evidence-digest.mjs",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/pdf-selection.mjs && node --check public/pdf-scroll-sync.mjs && node --check public/pdf-highlights.mjs && node --check ocr/engine.mjs && node --check public/document-translation.mjs && node --check public/pdf-figures.mjs && node --check public/pdf-figure-layout.mjs && node --check public/pdf-translation-layout.mjs && node --check public/reading-progress.mjs && node --check public/reader-controls.mjs && node --check public/style-examples.mjs && node --check reading-space.mjs && node --check public/reading-space.mjs && node --check public/evidence-digest.mjs && node --check public/pdf-math.mjs && node --check public/translation-presentation.mjs",
     "setup:ocr": "node ocr/setup.mjs",
     "test:quality": "VERCEL=1 node tests/quality.mjs",
     "test:pdf-selection": "node tests/pdf-selection.mjs",
@@ -20,7 +20,7 @@
     "test:processing-progress": "node tests/processing-progress.mjs",
     "test:document-translation": "node tests/document-translation.mjs",
     "test:task-cancellation": "node tests/task-cancellation.mjs",
-    "test:reading-layout": "node tests/reading-layout.mjs && node tests/translation-presentation.mjs",
+    "test:reading-layout": "node tests/reading-layout.mjs && node tests/translation-presentation.mjs && node tests/pdf-math.mjs",
     "test:reader-controls": "node tests/reader-controls.mjs",
     "test:evidence-digest": "node tests/evidence-digest.mjs",
     "test:local-cli": "node tests/local-cli.mjs && node tests/account-requests.mjs"

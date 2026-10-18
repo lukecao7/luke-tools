@@ -433,6 +433,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .translation-list-item { padding-left: 1.4em; text-indent: -1.4em; }
 .translation-run-in { font-weight: 650; }
 .translation-section-number { margin-right: .35em; }
+.pdf-layout-content .is-heading .paragraph-text { line-height: 1.45; }
+.pdf-layout-content .is-source-list .paragraph-text { padding-left: 1.4em; text-indent: -1.4em !important; }
+.pdf-math { margin: 0; position: relative; }
+.pdf-math-canvas { display: block; width: 100%; height: 100%; }
+.formula-loading { font-size: 11px; color: var(--muted); }
+.pdf-math.saved-chart-label::after, .pdf-math.linked-chart-label::after { content: ''; position: absolute; inset: 0; background: var(--accent-soft); mix-blend-mode: multiply; pointer-events: none; }
+.pdf-math.linked-chart-label::after { background: var(--accent-hover); }
 .pdf-layout-content .is-pull-quote .paragraph-text { line-height:1.4; font-family:var(--reading); font-weight:400; }
 .pdf-layout-content .is-pull-quote::before { content:'“'; display:block; color:#dfa83f; font-family:Georgia,serif; font-size:1.8em; line-height:.7; margin-bottom:8px; }
 

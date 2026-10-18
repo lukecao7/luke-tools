@@ -45,7 +45,7 @@ export function pullQuoteRanges(quotes, paragraphId, start, end) {
   return [{paragraphId:quote.id,...projectAlignedRange({sourceStart:0,sourceEnd:quote.original.length,start:0,end:quote.translation.length},start,end)}];
 }
 
-export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, figures, quotes}) {
+export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, figures, quotes, formulas = []}) {
   const content=page.querySelector('.pdf-layout-content');
   if (!content) return;
   const width=content.clientWidth, height=sourceHeight;
@@ -60,12 +60,13 @@ export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, fi
   };
   for (const element of content.children) {
     const figure=figures.find(f=>f.id===element.dataset.figureId);
+    const formula=formulas.find(f=>f.id===element.dataset.mathId);
     const paragraph=[...quotes,...task.paragraphs].find(p=>p.id===(element.dataset.sourceParagraph || element.id));
-    let box=figure?.rect || paragraph && bounds(paragraph.sourceSegments || []);
+    let box=figure?.rect || formula?.rect || (element.dataset.sourceRect && JSON.parse(element.dataset.sourceRect)) || paragraph && bounds(paragraph.sourceSegments || []);
     if (!box) continue;
-    // Use the reading column for full-width prose instead of repeating the
-    // PDF's print margins inside an already narrow screen pane.
-    if (paragraph && !paragraph.pullQuote && box.width > .6) box = { ...box, left: .035, width: .93 };
+    if (formula) element.style.aspectRatio = String(box.width * width / (box.height * height));
+    const text = element.querySelector('.paragraph-text');
+    if (text && element.dataset.sourceIndent) text.style.textIndent = `${Number(element.dataset.sourceIndent) * width}px`;
     const heading=element.querySelector('.translation-section-title');
     const body=element.querySelector('.translation-body-text');
     if (heading && body && paragraph) {
@@ -79,7 +80,7 @@ export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, fi
         place(heading,titleBox); place(body,bodyBox); continue;
       }
     }
-    place(element,box,figure);
+    place(element,box,figure || formula);
   }
   placements.sort((a,b)=>a.box.top-b.box.top || a.box.left-b.box.left);
   const placed=[];
@@ -101,7 +102,10 @@ export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, fi
         if (!conflicts.length) continue;
       }
       const nativeGap=(item.box.top-previous.box.top-previous.box.height)*height;
-      top=Math.max(top,previous.top+previous.height+Math.max(item.figure || previous.figure ? 16 : 24,nativeGap));
+      // Use the PDF's paragraph spacing; add only a small floor to keep an
+      // expanded Chinese paragraph clear of its following formula or heading.
+      const gap = Math.max(item.figure || previous.figure ? 8 : 12, Math.min(nativeGap, 36));
+      top=Math.max(top,previous.top+previous.height+gap);
     }
     item.element.style.top=`${top}px`;
     placed.push({...item,top,height:actualHeight});

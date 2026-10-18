@@ -12,7 +12,8 @@ import { processingDetails } from "./processing-progress.mjs";
 import { digestStats, needsDigestRefinement } from "./evidence-digest.mjs";
 
 import { bindPaneDivider, bindTocControls, readTocPreferences, setFocusVeil, closeDialogOnOutside } from "./reader-controls.mjs";
-import { translationDisplayText, translationHeadingLabel, translationBlocks } from "./translation-presentation.mjs";
+import { translationDisplayText, translationHeadingLabel, translationBlocks, translationFragments } from "./translation-presentation.mjs";
+import { pdfMathBlocks, renderPdfMath } from "./pdf-math.mjs";
 import { mountStyleExamples, examplesPending } from "./style-examples.mjs";
 
 const app = document.querySelector("#app");
@@ -757,26 +758,33 @@ function tocMarkup(items) {
   }).join("");
 }
 
-function translationParagraphMarkup(paragraph, pageTocItems) {
+function translationParagraphMarkup(paragraph, pageTocItems, fragment) {
   const text = translationDisplayText(paragraph);
   const ranges = paragraph.highlights.translation || [];
   const matchedToc = pageTocItems.find((item) => tocKey(paragraph.original).startsWith(tocKey(item.original))
     || text.startsWith(tocLabel(item)));
   const title = matchedToc ? translationDisplayText(matchedToc).trim() : "";
   const standaloneHeading = paragraph.headingLevel > 0 && text.trim() === title;
+  const inferredHeading = fragment?.start ? 0 : paragraph.headingLevel || (matchedToc && text.trim() === title ? matchedToc.headingLevel : 0)
+    || (paragraph.roleHint === 'candidate' && paragraph.original.length < 100 && /^\d+(?:\.\d+)+\.?\s+[A-Za-z]/.test(paragraph.original) ? 2 : 0);
   const formattedRange = (start, end) => {
     const number = text.slice(start, end).match(/^(\d+(?:\.\d+)*\.?|[A-Z](?:\.\d+)*\.)(?=[^\s\d.])/)?.[0];
     const render = (from, to) => richText(text.slice(from, to), ranges, paragraph.id, "translation", from);
-    return number && paragraph.headingLevel ? `<span class="translation-section-number">${render(start, start + number.length)}</span>${render(start + number.length, end)}` : render(start, end);
+    return number && inferredHeading ? `<span class="translation-section-number">${render(start, start + number.length)}</span>${render(start + number.length, end)}` : render(start, end);
   };
   const structuredContent = (from = 0) => translationBlocks(paragraph, state.task).filter(block => block.end > from).map(block => ({ ...block, start: Math.max(from, block.start) })).map(block => `<span class="translation-block${block.listItem ? ' translation-list-item' : ''}">${block.leadEnd && block.leadEnd > block.start
     ? `<strong class="translation-run-in">${formattedRange(block.start, block.leadEnd)}</strong>${formattedRange(block.leadEnd, block.end)}`
     : formattedRange(block.start, block.end)}</span>`).join("");
   let content = structuredContent();
-  let classes = paragraph.headingLevel ? `is-heading level-${matchedToc?.headingLevel || paragraph.headingLevel}` : "";
-  if (title && text.startsWith(title) && text.length > title.length) {
-    content = `<span class="translation-section-title level-${matchedToc.headingLevel}">${formattedRange(0, title.length)}</span><span class="translation-body-text">${structuredContent(title.length)}</span>`;
-    classes = `${classes} has-section-title`.trim();
+  let classes = inferredHeading ? `is-heading level-${inferredHeading}` : "";
+  if (fragment) {
+    const leadEnd = fragment.leadEnd;
+    content = leadEnd ? `<strong class="translation-run-in">${formattedRange(fragment.start, leadEnd)}</strong>${formattedRange(leadEnd, fragment.end)}` : formattedRange(fragment.start, fragment.end);
+    if (fragment.listItem && !inferredHeading) classes += ' is-source-list';
+  }
+  if ((!fragment || fragment.start === 0) && title && text.startsWith(title) && text.length > title.length && (!fragment || fragment.end > title.length)) {
+    content = `<span class="translation-section-title level-${matchedToc.headingLevel}">${formattedRange(0, title.length)}</span><span class="translation-body-text">${fragment ? formattedRange(title.length, fragment.end) : structuredContent(title.length)}</span>`;
+    classes = 'has-section-title';
   } else if (!title) {
     if (/^\s*•/.test(text)) {
       classes = `${classes} is-bullet`.trim();
@@ -784,17 +792,25 @@ function translationParagraphMarkup(paragraph, pageTocItems) {
   }
   if (paragraph.pullQuote) classes += " is-pull-quote";
   if (standaloneHeading) classes = `${classes} standalone-heading`.trim();
-  return `<div id="${paragraph.id}" class="pdf-translation-paragraph ${classes}"><p class="paragraph-text" data-paragraph-id="${paragraph.id}" data-side="translation">${content}</p></div>`;
+  const id = fragment?.start ? `${paragraph.id}-at-${fragment.start}` : paragraph.id;
+  return `<div id="${id}" class="pdf-translation-paragraph ${classes}"${fragment ? ` data-source-paragraph="${fragment.sourceParagraphId}" data-source-rect='${JSON.stringify(fragment.rect)}' data-source-indent="${fragment.indent}"` : ''}><p class="paragraph-text" data-paragraph-id="${paragraph.id}" data-side="translation" data-text-start="${fragment?.start || 0}" data-text-end="${fragment?.end ?? text.length}">${content}</p></div>`;
 }
 
 function pdfTranslationMarkup(task) {
   state.pullQuotes = translatedPullQuotes(task);
+  state.mathBlocks = pdfMathBlocks(task);
+  const mathIds = new Set(state.mathBlocks.flatMap(b => b.paragraphIds));
+  state.translationFragments = new Map();
+  for (const paragraph of [...task.paragraphs, ...state.pullQuotes]) {
+    if (paragraph.translationVisible === false && !paragraph.pullQuote || paragraph.figureId || paragraph.translationContinuationOf) continue;
+    state.translationFragments.set(paragraph.id, translationFragments(paragraph, task, { mathIds }));
+  }
   const tocItems = readerTocItems(task);
   const tocMarker = task.paragraphs.find((paragraph) => /^(table of contents|contents)$/i.test(String(paragraph.original || "").trim()));
   return Array.from({ length: task.pageCount || 1 }, (_, index) => {
     const pageNumber = index + 1;
     const paragraphs = [...task.paragraphs, ...state.pullQuotes].filter((paragraph) => {
-      if (paragraph.pageNumber !== pageNumber || paragraph.translationVisible === false && !paragraph.pullQuote || paragraph.figureId || paragraph.translationContinuationOf) return false;
+      if (!state.translationFragments.get(paragraph.id)?.some(f => f.pageNumber === pageNumber)) return false;
       const original = String(paragraph.original || "").trim();
       const translation = String(paragraph.translation || "").trim();
       if (paragraph.headingLevel > 0 && (/^[“”'\"‘’]/.test(original) || /^[\p{P}\p{S}\s]+$/u.test(translation))) return false;
@@ -807,11 +823,12 @@ function pdfTranslationMarkup(task) {
     }).join("");
     const isTocPage = tocMarker?.pageNumber === pageNumber;
     const figures = (task.figures || []).filter(f => f.pageNumber === pageNumber).map(f => `<figure class="translated-figure" data-figure-id="${f.id}"><div class="figure-loading">正在加载中文图表…</div><div class="figure-labels"></div></figure>`).join("");
+    const formulas = state.mathBlocks.filter(b => b.pageNumber === pageNumber).map(b => `<figure class="pdf-math" data-math-id="${b.id}" aria-label="原文公式及编号"><span class="formula-loading">正在加载公式…</span></figure>`).join('');
     return `<section class="pdf-translation-page" id="translation-page-${pageNumber}" data-page-number="${pageNumber}">
       <div class="pdf-page-label">PDF · ${pageNumber}</div>
       ${isTocPage
         ? `<div class="pdf-page-empty is-navigation"><strong>本页为原文目录</strong><span>中文目录已经整理在左侧，点击即可跳转。</span></div>`
-        : `<div class="pdf-layout-content">${insertedTitles}${paragraphs.length ? paragraphs.map((paragraph) => translationParagraphMarkup(paragraph, pageTocItems)).join("") : figures ? "" : `<p class="pdf-page-empty">本页没有正文内容。</p>`}${figures}</div>`}
+        : `<div class="pdf-layout-content">${insertedTitles}${paragraphs.length ? paragraphs.flatMap(paragraph => state.translationFragments.get(paragraph.id).filter(f => f.pageNumber === pageNumber).map(f => translationParagraphMarkup(paragraph, pageTocItems, f))).join("") : figures || formulas ? "" : `<p class="pdf-page-empty">本页没有正文内容。</p>`}${figures}${formulas}</div>`}
     </section>`;
   }).join("");
 }
@@ -1320,13 +1337,14 @@ async function renderPdfDocument(task) {
         element.dataset.sourceWidth=String(crop.width * pageWidth);
       }
     }
-    for (const paragraph of [...task.paragraphs, ...state.pullQuotes]) {
-      const element = document.getElementById(paragraph.id);
-      if (!element || paragraph.translationContinuationOf) continue;
-      const height = pageHeights[paragraph.pageNumber - 1];
-      const fontSize = sourceFontSize(paragraph, height);
+    for (const element of document.querySelectorAll('.pdf-translation-paragraph')) {
+      const text = element.querySelector('.paragraph-text');
+      const paragraph = [...task.paragraphs, ...state.pullQuotes].find(p => p.id === text.dataset.paragraphId);
+      const fragment = state.translationFragments.get(paragraph.id)?.find(f => f.start === Number(text.dataset.textStart));
+      const height = pageHeights[Number(element.closest('.pdf-translation-page').dataset.pageNumber) - 1];
+      const fontSize = sourceFontSize(fragment || paragraph, height);
       if (!fontSize) continue;
-      element.querySelector(".paragraph-text").style.fontSize = `${fontSize}px`;
+      text.style.fontSize = `${fontSize}px`;
       const heading = element.querySelector(".translation-section-title");
       const first = paragraph.sourceSegments.find((s) => s.text?.trim() && s.rect?.height);
       if (heading && first) heading.style.fontSize = `${first.rect.height * height}px`;
@@ -1354,9 +1372,12 @@ async function renderPdfDocument(task) {
       }
     }, { root: scroll, rootMargin: "800px 0px" });
     state.figureObserver = new IntersectionObserver(entries => {
-      for (const entry of entries) if (entry.isIntersecting) ensureFigure(entry.target);
+      for (const entry of entries) if (entry.isIntersecting) {
+        if (entry.target.dataset.mathId) ensureMath(entry.target);
+        else ensureFigure(entry.target);
+      }
     }, { root: document.querySelector("#pdf-translation-scroll"), rootMargin: "800px 0px" });
-    document.querySelectorAll(".translated-figure").forEach(element => state.figureObserver.observe(element));
+    document.querySelectorAll(".translated-figure, .pdf-math").forEach(element => state.figureObserver.observe(element));
     state.pdfObserver = observer;
     document.querySelectorAll(".pdf-page-shell").forEach((shell) => observer.observe(shell));
     state.pdfPosition = { taskId: task.id, ...(position || { pageNumber: 1, fraction: 0, edge: "start" }) };
@@ -1527,22 +1548,35 @@ async function ensureFigure(element) {
   return promise;
 }
 
+async function ensureMath(element) {
+  if (!element || !state.pdfDocument) return;
+  const block = state.mathBlocks.find(b => b.id === element.dataset.mathId);
+  if (!block) return;
+  const page = await state.pdfDocument.getPage(block.pageNumber);
+  return renderPdfMath({ page, block, element });
+}
+
 function layoutTranslatedPages() {
   if (!state.pdfPageHeights) return;
   const figures = (state.task.figures || []).map(f => ({...f, rect: state.figureRects?.get(f.id) || f.rect, paintRegions: state.figureRegions?.get(f.id)}));
   document.querySelectorAll(".pdf-translation-page").forEach(page => layoutTranslationPage(page, state.task, {
-    sourceWidth: state.pdfPageWidth, sourceHeight: state.pdfPageHeights[Number(page.dataset.pageNumber)-1], figures, quotes:state.pullQuotes || [],
+    sourceWidth: state.pdfPageWidth, sourceHeight: state.pdfPageHeights[Number(page.dataset.pageNumber)-1], figures, quotes:state.pullQuotes || [], formulas:state.mathBlocks || [],
   }));
 }
 
 function translationTargets(selection) {
   const mapped = linkedTranslationRanges(state.task, selection.paragraphId, selection.start, selection.end);
-  const paragraph = document.getElementById(mapped.paragraphId)?.querySelector('.paragraph-text[data-side="translation"]');
-  const ranges = paragraph ? mapped.ranges.map(r => domTextRange(paragraph, r.start, r.end)).filter(Boolean) : [];
+  const paragraphs = document.querySelectorAll(`.paragraph-text[data-paragraph-id="${CSS.escape(mapped.paragraphId)}"][data-side="translation"]`);
+  const ranges = [...paragraphs].flatMap(p => mapped.ranges.map(r => domTextRange(p, Math.max(r.start, Number(p.dataset.textStart || 0)), Math.min(r.end, Number(p.dataset.textEnd || p.textContent.length))))).filter(Boolean);
   const chartLabels = (state.task.figures || []).flatMap(f => f.labels).filter(label =>
     (label.sources || [{ paragraphId: label.paragraphId, start: label.sourceStart, end: label.sourceEnd }]).some(source => source.paragraphId === selection.paragraphId && source.start < selection.end && source.end > selection.start))
     ;
   const labels = [];
+  for (const block of state.mathBlocks || []) {
+    if (!block.paragraphIds.includes(selection.paragraphId)) continue;
+    const element = document.querySelector(`[data-math-id="${CSS.escape(block.id)}"]`);
+    if (element) labels.push(element);
+  }
   for(const label of chartLabels) {
     const element = document.getElementById(`translated-${label.id}`);
     if(!element)continue;
@@ -1565,7 +1599,8 @@ function translationTargets(selection) {
     const range=text && domTextRange(text,part.start,part.end);
     if (range) ranges.push(range);
   }
-  return { ranges, labels, pageNumber: state.task.paragraphs.find(p => p.id === mapped.paragraphId)?.pageNumber };
+  const firstParent = ranges[0]?.startContainer.parentElement;
+  return { ranges, labels, pageNumber: Number(firstParent?.closest('.pdf-translation-page')?.dataset.pageNumber) || state.task.paragraphs.find(p => p.id === mapped.paragraphId)?.pageNumber };
 }
 
 function refreshHighlightDisplay(ids) {
@@ -1583,7 +1618,8 @@ function refreshHighlightDisplay(ids) {
     if(node.closest('.pdf-translation-paragraph')) {
       const wrapper=node.closest('.pdf-translation-paragraph');
       const template=document.createElement('template');
-      template.innerHTML=translationParagraphMarkup(paragraph,readerTocItems(state.task).filter(p=>p.pageNumber===paragraph.pageNumber));
+      const fragment = state.translationFragments.get(paragraph.id)?.find(f => f.start === Number(node.dataset.textStart || 0));
+      template.innerHTML=translationParagraphMarkup(paragraph,readerTocItems(state.task).filter(p=>p.pageNumber===(fragment?.pageNumber || paragraph.pageNumber)),fragment);
       // Heading/body placement may be absolute; copy only the mark-bearing text.
       const fresh=template.content.querySelector('.paragraph-text');
       if(node.querySelector('.translation-section-title') && fresh.querySelector('.translation-section-title')) {
@@ -1668,7 +1704,7 @@ async function navigateHighlight(direction) {
     }
   } else {
     const selector=`.paragraph-text[data-paragraph-id="${CSS.escape(item.paragraphId)}"][data-side="${item.side}"]`;
-    const mark=document.querySelector(selector)?.querySelector(`[data-highlight-id="${CSS.escape(item.id)}"]`);
+    const mark=[...document.querySelectorAll(selector)].map(p => p.querySelector(`[data-highlight-id="${CSS.escape(item.id)}"]`)).find(Boolean);
     mark?.scrollIntoView({block:'center',behavior:'instant'});mark?.click();
   }
 }
@@ -1702,12 +1738,12 @@ function updateLinkedHighlights() {
     ink.dataset.savedRanges=JSON.stringify(saved.ranges.filter(range=>ink.contains(range.startContainer) && ink.contains(range.endContainer)).map(range=>({start:range.startOffset,end:range.endOffset})));
   }
   if (globalThis.Highlight && CSS.highlights) CSS.highlights.set("saved-translation", new Highlight(...saved.ranges));
-  document.querySelectorAll("[data-chart-paragraph]").forEach(label => label.classList.toggle("saved-chart-label", saved.labels.has(label)));
+  document.querySelectorAll("[data-chart-paragraph], .pdf-math").forEach(label => label.classList.toggle("saved-chart-label", saved.labels.has(label)));
   const activeContainer = translatedActive && translatedContainer(selection);
   const activeRange = activeContainer && domTextRange(activeContainer, selection.start, selection.end);
   const targets = linked ? translationTargets(selection) : { ranges: activeRange ? [activeRange] : [], labels: [] };
   if (globalThis.Highlight && CSS.highlights) CSS.highlights.set("linked-translation", new Highlight(...targets.ranges));
-  document.querySelectorAll("[data-chart-paragraph]").forEach(label => label.classList.toggle("linked-chart-label", targets.labels.includes(label)));
+  document.querySelectorAll("[data-chart-paragraph], .pdf-math").forEach(label => label.classList.toggle("linked-chart-label", targets.labels.includes(label)));
   updateFocusReading(saved);
   const legacy = [...document.querySelectorAll('.highlight[data-side="translation"]')].map(mark => {
     const range = document.createRange(); range.selectNodeContents(mark);
@@ -1750,7 +1786,7 @@ function translatedDescriptor(container) {
 }
 function translatedContainer(selection) {
   return selection.labelId ? document.getElementById(`translated-${selection.labelId}`)?.querySelector('.figure-label-ink')
-    : document.querySelector(`.paragraph-text[data-paragraph-id="${CSS.escape(selection.paragraphId)}"][data-side="translation"]`);
+    : [...document.querySelectorAll(`.paragraph-text[data-paragraph-id="${CSS.escape(selection.paragraphId)}"][data-side="translation"]`)].find(p => selection.start >= Number(p.dataset.textStart || 0) && selection.start < Number(p.dataset.textEnd || p.textContent.length));
 }
 function handleTranslatedHighlightClick(event) {
   if (!window.getSelection()?.isCollapsed || state.translationDragging) return false;
@@ -1799,11 +1835,12 @@ function dragTranslationBoundary(event, boundary, selection, container) {
   const move = e => {
     const offset = offsetFromPoint(container, e.clientX, e.clientY);
     if (offset === null) return;
-    if (boundary === 'start') start = Math.max(0, Math.min(offset, end - 1)); else end = Math.min(container.textContent.length, Math.max(offset, start + 1));
+    const base = Number(container.dataset.textStart || 0);
+    if (boundary === 'start') start = Math.max(base, Math.min(offset, end - 1)); else end = Math.min(base + container.textContent.length, Math.max(offset, start + 1));
     moved = true; restore();
     const updates = translatedSelectionUpdates({ ...selection, start, end });
     for (const item of updates) task.paragraphs.find(p => p.id === item.paragraphId).highlights[item.side] = item.highlights;
-    state.selection = { ...selection, start, end, text: container.textContent.slice(start, end) };
+    state.selection = { ...selection, start, end, text: container.textContent.slice(start - base, end - base) };
     refreshHighlightDisplay(updates.map(u => u.paragraphId));
   };
   const finish = e => {
@@ -1893,7 +1930,7 @@ function selectionOffsets(container, range) {
   const prefix = range.cloneRange();
   prefix.selectNodeContents(container);
   prefix.setEnd(range.startContainer, range.startOffset);
-  const start = prefix.toString().length;
+  const start = prefix.toString().length + Number(container.dataset.textStart || 0);
   return { start, end: start + range.toString().length };
 }
 
@@ -2069,10 +2106,13 @@ function offsetFromPoint(container, x, y) {
   const prefix = document.createRange();
   prefix.selectNodeContents(container);
   prefix.setEnd(caret.startContainer, caret.startOffset);
-  return prefix.toString().length;
+  return prefix.toString().length + Number(container.dataset.textStart || 0);
 }
 
 function domTextRange(container, start, end) {
+  const base = Number(container.dataset.textStart || 0);
+  start -= base; end -= base;
+  if (start < 0 || end <= start || end > container.textContent.length) return;
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   let position = 0;
   let startNode = null;

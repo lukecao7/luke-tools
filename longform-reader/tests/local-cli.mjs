@@ -36,12 +36,12 @@ fs.writeFileSync(process.argv[process.argv.indexOf('-o') + 1], JSON.stringify(re
   const port = listener.address().port; await new Promise(r => listener.close(r));
   const url = `http://127.0.0.1:${port}`;
   server = spawn(process.execPath, ['server.mjs'], { cwd: dir, env: { ...process.env, CODEX_BIN: mock, READING_SPACES: '1',
-    CODEX_MODEL: 'gpt-6.1-sol', CODEX_REASONING_EFFORT: 'low', VERCEL: '0', STORAGE_PROVIDER: 'local', APP_PASSWORD: '', PORT: String(port), TEST_DIR: dir }, stdio: 'ignore' });
+    CODEX_MODEL: 'gpt-6.1-sol', CODEX_REASONING_EFFORT: 'medium', VERCEL: '0', STORAGE_PROVIDER: 'local', APP_PASSWORD: '', PORT: String(port), TEST_DIR: dir }, stdio: 'ignore' });
   await until(() => fetch(url + '/api/health').then(r => r.ok, () => false));
   const request = (route, space, method = 'GET', body) => fetch(url + route, { method,
     headers: { ...(space ? { 'X-Reading-Space': space } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
   const health = await (await fetch(url + '/api/health')).json();
-  assert.equal(health.model, 'gpt-6.1-sol'); assert.equal(health.reasoningEffort, 'low'); assert.equal(health.serviceTier, 'default');
+  assert.equal(health.model, 'gpt-6.1-sol'); assert.equal(health.reasoningEffort, 'medium'); assert.equal(health.serviceTier, 'default');
   assert.equal(health.provider, 'codex'); assert.equal(health.browserSpaces, true); assert.equal(health.userOwnedKeys, undefined);
   assert.equal((await request('/api/tasks')).status, 428);
   assert.equal((await request('/api/deepseek/balance', spaceA)).status, 404);
@@ -74,7 +74,7 @@ fs.writeFileSync(process.argv[process.argv.indexOf('-o') + 1], JSON.stringify(re
   const calls = (await readFile(path.join(dir, 'calls.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse);
   for (const { args } of calls) {
     assert.equal(args[args.indexOf('--model') + 1], 'gpt-6.1-sol');
-    assert.ok(args.includes('model_reasoning_effort="low"')); assert.ok(args.includes('service_tier="default"'));
+    assert.ok(args.includes('model_reasoning_effort="medium"')); assert.ok(args.includes('service_tier="default"'));
     assert.equal(args[args.indexOf('--sandbox') + 1], 'read-only'); assert.ok(args.includes('--ignore-user-config'));
   }
   console.log(JSON.stringify({ ok: true, checks: ['CLI model, effort and standard speed', 'imports and summaries without API keys', 'existing PDF and highlights preserved', 'browser-space isolation', 'previous summary retained after CLI failure'] }));

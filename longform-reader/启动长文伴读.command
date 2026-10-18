@@ -19,4 +19,4 @@ fi
 ) &
 
 print '长文伴读本地版正在启动。使用期间请保持这个窗口打开，按 Control-C 停止。'
-exec /usr/bin/env "PATH=/usr/local/bin:$PATH" PORT=4173 VERCEL=0 STORAGE_PROVIDER=local READING_SPACES=1 CODEX_MODEL=gpt-6.1-sol CODEX_REASONING_EFFORT=low APP_PASSWORD= /usr/local/bin/node server.mjs
+exec /usr/bin/env "PATH=/usr/local/bin:$PATH" PORT=4173 VERCEL=0 STORAGE_PROVIDER=local READING_SPACES=1 CODEX_MODEL=gpt-6.1-sol CODEX_REASONING_EFFORT=medium APP_PASSWORD= /usr/local/bin/node server.mjs
