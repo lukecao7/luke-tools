@@ -20,7 +20,7 @@
     "test:processing-progress": "node tests/processing-progress.mjs",
     "test:document-translation": "node tests/document-translation.mjs",
     "test:task-cancellation": "node tests/task-cancellation.mjs",
-    "test:reading-layout": "node tests/reading-layout.mjs",
+    "test:reading-layout": "node tests/reading-layout.mjs && node tests/translation-presentation.mjs",
     "test:reader-controls": "node tests/reader-controls.mjs",
     "test:byok": "node tests/byok.mjs",
     "test:evidence-digest": "node tests/evidence-digest.mjs"

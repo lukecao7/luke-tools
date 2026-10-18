@@ -1,3 +1,58 @@
+const TOC_KEY = 'longform.reader.toc.v1';
+const tocLimit = viewport => Math.max(180, Math.min(420, viewport - 560));
+export function readTocPreferences(storage, viewport = 1200) {
+  let saved;
+  try { saved = JSON.parse(storage.getItem(TOC_KEY)); } catch { /* Defaults also work without browser storage. */ }
+  return { width: Number.isFinite(saved?.width) ? Math.max(180, Math.min(420, saved.width)) : 252,
+    collapsed: typeof saved?.collapsed === 'boolean' ? saved.collapsed : viewport < 1000 };
+}
+
+export function bindTocControls({ body, sidebar, toggle, close, divider, preferences, storage, onBeforeChange, onCommit }) {
+  const save = () => { try { storage.setItem(TOC_KEY, JSON.stringify(preferences)); } catch { /* Keep this session usable. */ } };
+  const setWidth = value => {
+    const max = tocLimit(body.clientWidth);
+    const width = Math.max(180, Math.min(max, value));
+    body.style.setProperty('--toc-width', `${width}px`);
+    divider.setAttribute('aria-valuemax', String(max));
+    divider.setAttribute('aria-valuenow', String(Math.round(width)));
+    return width;
+  };
+  setWidth(preferences.width);
+  const collapse = collapsed => {
+    onBeforeChange?.();
+    preferences.collapsed = collapsed;
+    sidebar.hidden = collapsed;
+    body.classList.toggle('toc-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', collapsed ? '展开目录' : '收起目录');
+    if (collapsed && sidebar.contains(document.activeElement)) toggle.focus();
+    setWidth(preferences.width); save(); onCommit?.();
+  };
+  toggle.addEventListener('click', () => collapse(!preferences.collapsed));
+  close.addEventListener('click', () => collapse(true));
+  divider.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    event.preventDefault(); onBeforeChange?.();
+    divider.setPointerCapture(event.pointerId); body.classList.add('resizing-toc');
+    const move = event => { preferences.width = setWidth(event.clientX - body.getBoundingClientRect().left); };
+    const end = () => {
+      body.classList.remove('resizing-toc'); divider.removeEventListener('pointermove', move);
+      save(); onCommit?.();
+    };
+    divider.addEventListener('pointermove', move);
+    divider.addEventListener('lostpointercapture', end, { once: true });
+  });
+  divider.addEventListener('dblclick', () => {
+    onBeforeChange?.(); preferences.width = setWidth(252); save(); onCommit?.();
+  });
+  divider.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home'].includes(event.key)) return;
+    event.preventDefault(); onBeforeChange?.();
+    preferences.width = setWidth(event.key === 'Home' ? 252 : preferences.width + (event.key === 'ArrowLeft' ? -20 : 20));
+    save(); onCommit?.();
+  });
+}
+
 export function bindPaneDivider({ area, divider, ratio = .5, onChange, onCommit }) {
   const set = value => {
     ratio = Math.max(.25, Math.min(.75, value));

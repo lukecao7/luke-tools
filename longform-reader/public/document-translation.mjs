@@ -1,3 +1,5 @@
+import { translationDisplayText } from './translation-presentation.mjs';
+
 // Source paragraphs and offsets stay immutable. Translation units may span PDF pages.
 export function bounds(segments) {
   const rects = segments.map(s => s.rect).filter(Boolean);
@@ -184,7 +186,7 @@ export function applyTranslationResult(task, unit, result) {
     for (const label of task.figures.flatMap(f => f.labels)) if (unit.labelIds.includes(label.id)) label.translation = translation;
   } else {
     const paragraph = task.paragraphs.find(p => p.id === unit.id);
-    paragraph.translation = translation;
+    paragraph.translation = translationDisplayText({ original: unit.original, translation });
     paragraph.translationAlignment = alignments;
     paragraph.translationAligned = alignments.length > 0;
     for (const source of unit.sources) task.paragraphs.find(p => p.id === source.id).status = "done";

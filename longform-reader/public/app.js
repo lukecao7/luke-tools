@@ -11,7 +11,8 @@ import { translatedPullQuotes, layoutTranslationPage, pullQuoteRanges } from "./
 import { processingDetails } from "./processing-progress.mjs";
 import { digestStats, needsDigestRefinement } from "./evidence-digest.mjs";
 
-import { bindPaneDivider, setFocusVeil, closeDialogOnOutside } from "./reader-controls.mjs";
+import { bindPaneDivider, bindTocControls, readTocPreferences, setFocusVeil, closeDialogOnOutside } from "./reader-controls.mjs";
+import { translationDisplayText, translationHeadingLabel, translationBlocks } from "./translation-presentation.mjs";
 import { mountStyleExamples, examplesPending } from "./style-examples.mjs";
 
 const app = document.querySelector("#app");
@@ -28,6 +29,7 @@ const state = {
   view: "compare",
   focusMode: false,
   paneRatio: .5,
+  tocPreferences: readTocPreferences(localStorage, window.innerWidth),
   highlightPreview: null,
   summaryClock: null,
   selection: null,
@@ -267,8 +269,8 @@ async function loadTask(id, { quiet = false } = {}) {
     state.task = data.task;
     highlightOutbox.apply(state.task);
     const migration = canonicalizeLegacyHighlights(state.task);
-    if (migration.length) highlightOutbox.enqueue(id, migration);
-    else void highlightOutbox.flush(id);
+    if (migration.length) highlightOutbox.enqueue(data.task.id, migration);
+    else void highlightOutbox.flush(data.task.id);
     reportAccountError(data.task);reportAccountError(data.task.summaryProgress);
     if (state.readingTaskId !== id || !document.querySelector(".reader")) restoreReadingState(data.task);
     if (state.route === "reader") renderReader();
@@ -431,8 +433,8 @@ async function submitImport(event) {
     state.task = data.task;
     highlightOutbox.apply(state.task);
     const migration = canonicalizeLegacyHighlights(state.task);
-    if (migration.length) highlightOutbox.enqueue(id, migration);
-    else void highlightOutbox.flush(id);
+    if (migration.length) highlightOutbox.enqueue(data.task.id, migration);
+    else void highlightOutbox.flush(data.task.id);
     go("reader", data.task.id);
   } catch (error) {
     if (run.cancelling || state.importRun !== run || state.route !== "import") return;
@@ -465,8 +467,8 @@ async function cancelImport() {
     if (data.task) { state.task = data.task;
     highlightOutbox.apply(state.task);
     const migration = canonicalizeLegacyHighlights(state.task);
-    if (migration.length) highlightOutbox.enqueue(id, migration);
-    else void highlightOutbox.flush(id); go("reader", data.task.id); return; }
+    if (migration.length) highlightOutbox.enqueue(data.task.id, migration);
+    else void highlightOutbox.flush(data.task.id); go("reader", data.task.id); return; }
     document.querySelector("#import-progress").innerHTML = '<strong>已取消处理</strong><p class="processing-note">文件仍保留在这里，可以重新开始。</p>';
     button.disabled = false; button.textContent = "返回列表";
     const submit = document.querySelector("#submit-import"); submit.disabled = false; submit.textContent = "重新开始";
@@ -629,7 +631,7 @@ function paragraphCell(paragraph, side) {
 }
 
 function tocLabel(item) {
-  return String(item.translation || item.original || "").replace(/\s+/g, " ").trim();
+  return translationHeadingLabel(item).replace(/\s+/g, " ").trim();
 }
 
 function tocKey(value) {
@@ -759,24 +761,27 @@ function tocMarkup(items) {
 }
 
 function translationParagraphMarkup(paragraph, pageTocItems) {
-  const text = paragraph.translation || paragraph.original || "";
+  const text = translationDisplayText(paragraph);
   const ranges = paragraph.highlights.translation || [];
   const matchedToc = pageTocItems.find((item) => tocKey(paragraph.original).startsWith(tocKey(item.original))
     || text.startsWith(tocLabel(item)));
-  const title = matchedToc ? tocLabel(matchedToc) : "";
+  const title = matchedToc ? translationDisplayText(matchedToc).trim() : "";
   const standaloneHeading = paragraph.headingLevel > 0 && text.trim() === title;
-  let content = richText(text, ranges, paragraph.id, "translation");
+  const formattedRange = (start, end) => {
+    const number = text.slice(start, end).match(/^(\d+(?:\.\d+)*\.?|[A-Z](?:\.\d+)*\.)(?=[^\s\d.])/)?.[0];
+    const render = (from, to) => richText(text.slice(from, to), ranges, paragraph.id, "translation", from);
+    return number && paragraph.headingLevel ? `<span class="translation-section-number">${render(start, start + number.length)}</span>${render(start + number.length, end)}` : render(start, end);
+  };
+  const structuredContent = (from = 0) => translationBlocks(paragraph, state.task).filter(block => block.end > from).map(block => ({ ...block, start: Math.max(from, block.start) })).map(block => `<span class="translation-block${block.listItem ? ' translation-list-item' : ''}">${block.leadEnd && block.leadEnd > block.start
+    ? `<strong class="translation-run-in">${formattedRange(block.start, block.leadEnd)}</strong>${formattedRange(block.leadEnd, block.end)}`
+    : formattedRange(block.start, block.end)}</span>`).join("");
+  let content = structuredContent();
   let classes = paragraph.headingLevel ? `is-heading level-${matchedToc?.headingLevel || paragraph.headingLevel}` : "";
   if (title && text.startsWith(title) && text.length > title.length) {
-    content = `<span class="translation-section-title level-${matchedToc.headingLevel}">${richText(text.slice(0, title.length), ranges, paragraph.id, "translation", 0)}</span><span class="translation-body-text">${richText(text.slice(title.length), ranges, paragraph.id, "translation", title.length)}</span>`;
+    content = `<span class="translation-section-title level-${matchedToc.headingLevel}">${formattedRange(0, title.length)}</span><span class="translation-body-text">${structuredContent(title.length)}</span>`;
     classes = `${classes} has-section-title`.trim();
   } else if (!title) {
-    const bulletLead = text.match(/^([^•\n]{2,24}\s*)•/);
-    if (bulletLead) {
-      const end = bulletLead[1].length;
-      content = `<span class="translation-section-title level-2">${richText(text.slice(0, end), ranges, paragraph.id, "translation", 0)}</span><span class="translation-body-text">${richText(text.slice(end), ranges, paragraph.id, "translation", end)}</span>`;
-      classes = `${classes} has-section-title is-bullet`.trim();
-    } else if (/^\s*•/.test(text)) {
+    if (/^\s*•/.test(text)) {
       classes = `${classes} is-bullet`.trim();
     }
   }
@@ -911,7 +916,7 @@ function renderReader() {
   app.innerHTML = `
     <main class="reader">
       <header class="reader-header">
-        <div class="doc-meta"><button class="doc-back" id="reader-back" title="返回列表">${icons.arrow}</button><a class="reader-home" href="/" data-home-link aria-label="长文伴读，返回首页"><span class="brand-mark" aria-hidden="true"></span></a><span class="doc-name">${escapeHtml(task.title)}</span></div>
+        <div class="doc-meta"><button class="doc-back" id="reader-back" title="返回列表">${icons.arrow}</button><button class="toc-visibility" id="toc-visibility" aria-label="${state.tocPreferences.collapsed ? '展开目录' : '收起目录'}" aria-controls="reader-toc" aria-expanded="${!state.tocPreferences.collapsed}" title="显示或收起目录">☰<span>目录</span></button><a class="reader-home" href="/" data-home-link aria-label="长文伴读，返回首页"><span class="brand-mark" aria-hidden="true"></span></a><span class="doc-name">${escapeHtml(task.title)}</span></div>
         <div class="view-switch" aria-label="阅读视图">
           <button data-view="compare" class="${state.view === "compare" ? "active" : ""}">对照</button><button data-view="original" class="${state.view === "original" ? "active" : ""}">原文</button><button data-view="translation" class="${state.view === "translation" ? "active" : ""}">译文</button>
         </div>
@@ -920,13 +925,14 @@ function renderReader() {
           <button class="button primary" id="generate-summary" ${processing || failed ? "disabled" : ""}>${isGeneratingSummary(task) ? "查看生成进度" : task.summary ? "查看摘要" : "生成摘要"}</button>
         </div>
       </header>
-      <div class="reader-body">
-        <aside class="toc">
-          <div class="toc-head">目录</div>
+      <div class="reader-body ${state.tocPreferences.collapsed ? 'toc-collapsed' : ''}" style="--toc-width:${state.tocPreferences.width}px">
+        <aside class="toc" id="reader-toc" ${state.tocPreferences.collapsed ? 'hidden' : ''}>
+          <div class="toc-head"><span>目录</span><button id="toc-close" aria-label="收起目录" title="收起目录">‹</button></div>
           <nav class="toc-items">${tocItems.length ? tocMarkup(tocItems) : `<div class="task-progress" style="padding:10px">未识别到目录</div>`}</nav>
           ${digestNotice(task)}
           <div class="toc-footer"><div class="footer-count"><strong id="footer-position">${readerProgressLabel(task, 0)}</strong><span id="footer-percent">0%</span></div><div class="footer-track"><span id="footer-progress" style="width:0%"></span></div><div class="reading-save-status" id="reading-save-status" role="status">${state.readingStatus.get(task.id) || "阅读进度自动保存"}</div></div>
         </aside>
+        <div class="toc-divider" id="toc-divider" role="separator" tabindex="0" aria-label="调整目录宽度，双击恢复默认" aria-controls="reader-toc" aria-orientation="vertical" aria-valuemin="180" aria-valuemax="420" aria-valuenow="${state.tocPreferences.width}"></div>
         ${pdfMode ? pdfReaderMarkup(task, viewClass, failed) : `<section class="reading-area ${viewClass}" id="reading-area">
           <div class="reading-scroll" id="reading-scroll">
             <div class="column-head"><div class="original-head">原文</div><div class="translation-head">${task.paragraphs.some((p) => p.language === "en") ? "中文翻译" : "阅读文本"}</div></div>
@@ -971,6 +977,12 @@ function renderExplainCard() {
 }
 
 function bindReaderEvents() {
+  bindTocControls({ body: document.querySelector('.reader-body'), sidebar: document.querySelector('#reader-toc'),
+    toggle: document.querySelector('#toc-visibility'), close: document.querySelector('#toc-close'), divider: document.querySelector('#toc-divider'),
+    preferences: state.tocPreferences, storage: localStorage,
+    onBeforeChange: preserveReaderPosition,
+    onCommit: () => { if (state.task.sourceType === 'pdf' && state.task.sourceAvailable) renderPdfDocument(state.task); else { state.textReady = true; updateLinkedHighlights(); } },
+  });
   document.querySelector("#reader-back").onclick = () => go("home");
   document.querySelectorAll("[data-view]").forEach((button) => button.onclick = () => { state.view = button.dataset.view; renderReader(); });
   document.querySelector("#view-focus").onclick = () => {
@@ -1313,18 +1325,18 @@ async function renderPdfDocument(task) {
       const element = document.getElementById(paragraph.id);
       if (!element || paragraph.translationContinuationOf) continue;
       const height = pageHeights[paragraph.pageNumber - 1];
-      const fontSize = sourceFontSize(paragraph, height);
+      const fontSize = Math.max(paragraph.headingLevel ? 20 : 16, sourceFontSize(paragraph, height) || 16);
       if (!fontSize) continue;
       element.querySelector(".paragraph-text").style.fontSize = `${fontSize}px`;
       const heading = element.querySelector(".translation-section-title");
       const first = paragraph.sourceSegments.find((s) => s.text?.trim() && s.rect?.height);
-      if (heading && first) heading.style.fontSize = `${first.rect.height * height}px`;
+      if (heading && first) heading.style.fontSize = `${Math.max(19, first.rect.height * height)}px`;
     }
     document.querySelectorAll(".translation-inserted-title[data-source-title]").forEach((heading) => {
       const pageNumber = Number(heading.closest(".pdf-translation-page").dataset.pageNumber);
       const source = task.paragraphs.find((p) => p.pageNumber === pageNumber && tocKey(p.original) === tocKey(heading.dataset.sourceTitle));
       const fontSize = source && sourceFontSize(source, pageHeights[pageNumber - 1]);
-      if (fontSize) heading.style.fontSize = `${fontSize}px`;
+      if (fontSize) heading.style.fontSize = `${Math.max(20, fontSize)}px`;
     });
     layoutTranslatedPages();
     let previousTranslationWidth = document.querySelector("#pdf-translation-scroll").clientWidth;

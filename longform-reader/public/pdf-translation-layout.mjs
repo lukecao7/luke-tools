@@ -61,8 +61,11 @@ export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, fi
   for (const element of content.children) {
     const figure=figures.find(f=>f.id===element.dataset.figureId);
     const paragraph=[...quotes,...task.paragraphs].find(p=>p.id===(element.dataset.sourceParagraph || element.id));
-    const box=figure?.rect || paragraph && bounds(paragraph.sourceSegments || []);
+    let box=figure?.rect || paragraph && bounds(paragraph.sourceSegments || []);
     if (!box) continue;
+    // Use the reading column for full-width prose instead of repeating the
+    // PDF's print margins inside an already narrow screen pane.
+    if (paragraph && !paragraph.pullQuote && box.width > .6) box = { ...box, left: .035, width: .93 };
     const heading=element.querySelector('.translation-section-title');
     const body=element.querySelector('.translation-body-text');
     if (heading && body && paragraph) {
@@ -98,7 +101,7 @@ export function layoutTranslationPage(page, task, {sourceWidth, sourceHeight, fi
         if (!conflicts.length) continue;
       }
       const nativeGap=(item.box.top-previous.box.top-previous.box.height)*height;
-      top=Math.max(top,previous.top+previous.height+Math.max(10,nativeGap));
+      top=Math.max(top,previous.top+previous.height+Math.max(item.figure || previous.figure ? 16 : 24,nativeGap));
     }
     item.element.style.top=`${top}px`;
     placed.push({...item,top,height:actualHeight});
