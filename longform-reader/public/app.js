@@ -819,16 +819,20 @@ function pdfTranslationMarkup(task) {
   }).join("");
 }
 
+function readingZoomMarkup(original = false) {
+  return `<div class="pdf-tools" aria-label="两侧同步缩放"><button ${original ? 'id="pdf-zoom-out"' : ''} data-reading-zoom="-1" aria-label="缩小原文和译文">−</button><span ${original ? 'id="pdf-zoom-value"' : ''} data-reading-zoom-value title="原文和译文同步缩放">同步 · ${Math.round(state.pdfScale * 100)}%</span><button ${original ? 'id="pdf-zoom-in"' : ''} data-reading-zoom="1" aria-label="放大原文和译文">＋</button></div>`;
+}
+
 function pdfReaderMarkup(task, viewClass, failed) {
   return `<section class="reading-area pdf-reading-area ${viewClass}" id="reading-area">
     ${failed ? `<div class="failure-banner"><div><strong>AI 处理没有完成</strong><span>${escapeHtml(task.error || "请稍后重试")}</span></div><button class="button" id="retry-task">${task.documentAnalyzed ? "继续翻译" : "继续处理"}</button></div>` : ""}
     <div class="pdf-reader-columns">
       <section class="pdf-pane">
-        <div class="pdf-pane-head"><strong>原 PDF</strong><div class="pdf-tools"><button id="pdf-zoom-out" aria-label="缩小 PDF">−</button><span id="pdf-zoom-value">适合宽度</span><button id="pdf-zoom-in" aria-label="放大 PDF">＋</button></div></div>
+        <div class="pdf-pane-head"><strong>原 PDF</strong>${readingZoomMarkup(true)}</div>
         <div class="pdf-scroll" id="pdf-scroll"><div class="pdf-pages" id="pdf-pages"><div class="pdf-loading">正在打开原 PDF…</div></div></div>
       </section>
       <section class="pdf-translation-pane">
-        <div class="pdf-pane-head"><strong>中文翻译</strong><span>正文与图表</span></div>
+        <div class="pdf-pane-head"><strong>中文翻译</strong>${readingZoomMarkup()}</div>
         <div class="pdf-translation-scroll" id="pdf-translation-scroll">${pdfTranslationMarkup(task)}</div>
       </section>
     </div>
@@ -1052,8 +1056,7 @@ function bindPdfReaderEvents() {
   translationScroll?.addEventListener("mouseup", handleTextSelection);
   translationScroll?.addEventListener("click", handleReaderClick);
   translationScroll?.addEventListener("pointerdown", handleRangeDrag);
-  document.querySelector("#pdf-zoom-out")?.addEventListener("click", () => changePdfZoom(-0.12));
-  document.querySelector("#pdf-zoom-in")?.addEventListener("click", () => changePdfZoom(0.12));
+  document.querySelectorAll('[data-reading-zoom]').forEach(button => button.addEventListener('click', () => changePdfZoom(Number(button.dataset.readingZoom) * .12)));
   setupPdfScrollThumb();
 }
 
@@ -1291,8 +1294,8 @@ async function renderPdfDocument(task) {
     if (token !== state.pdfRenderToken) return pdf.destroy();
     state.pdfDocument = pdf;
     state.pdfJs = pdfjs;
-    const pageWidth = scroll.clientWidth > 0 ? Math.max(320, (scroll.clientWidth - 42) * state.pdfScale)
-      : state.pdfPageWidth || Math.max(320, document.querySelector("#pdf-translation-scroll").clientWidth - 116);
+    const availableWidth = scroll.clientWidth || document.querySelector("#pdf-translation-scroll").clientWidth;
+    const pageWidth = Math.max(320, availableWidth - 42) * state.pdfScale;
     state.pdfPageWidth = pageWidth;
     state.figureRects = new Map(); state.figureRegions = new Map();
     const pageHeights = await Promise.all(Array.from({ length: pdf.numPages }, async (_, index) => {
@@ -1325,18 +1328,18 @@ async function renderPdfDocument(task) {
       const element = document.getElementById(paragraph.id);
       if (!element || paragraph.translationContinuationOf) continue;
       const height = pageHeights[paragraph.pageNumber - 1];
-      const fontSize = Math.max(paragraph.headingLevel ? 20 : 16, sourceFontSize(paragraph, height) || 16);
+      const fontSize = sourceFontSize(paragraph, height);
       if (!fontSize) continue;
       element.querySelector(".paragraph-text").style.fontSize = `${fontSize}px`;
       const heading = element.querySelector(".translation-section-title");
       const first = paragraph.sourceSegments.find((s) => s.text?.trim() && s.rect?.height);
-      if (heading && first) heading.style.fontSize = `${Math.max(19, first.rect.height * height)}px`;
+      if (heading && first) heading.style.fontSize = `${first.rect.height * height}px`;
     }
     document.querySelectorAll(".translation-inserted-title[data-source-title]").forEach((heading) => {
       const pageNumber = Number(heading.closest(".pdf-translation-page").dataset.pageNumber);
       const source = task.paragraphs.find((p) => p.pageNumber === pageNumber && tocKey(p.original) === tocKey(heading.dataset.sourceTitle));
       const fontSize = source && sourceFontSize(source, pageHeights[pageNumber - 1]);
-      if (fontSize) heading.style.fontSize = `${Math.max(20, fontSize)}px`;
+      if (fontSize) heading.style.fontSize = `${fontSize}px`;
     });
     layoutTranslatedPages();
     let previousTranslationWidth = document.querySelector("#pdf-translation-scroll").clientWidth;
@@ -1348,8 +1351,7 @@ async function renderPdfDocument(task) {
       state.pdfScrollSync?.restore();
     });
     state.translationResizeObserver.observe(document.querySelector("#pdf-translation-scroll"));
-    const zoomLabel = document.querySelector("#pdf-zoom-value");
-    if (zoomLabel) zoomLabel.textContent = state.pdfScale === 1 ? "适合宽度" : `${Math.round(state.pdfScale * 100)}%`;
+    document.querySelectorAll('[data-reading-zoom-value]').forEach(label => { label.textContent = `同步 · ${Math.round(state.pdfScale * 100)}%`; });
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) renderPdfPage(pdfjs, pdf, entry.target, token);
