@@ -1,4 +1,4 @@
-import {apiFetch, uploadLimitMB} from "./deepseek-account.mjs";
+import {apiFetch, uploadLimitMB} from "./reading-space.mjs";
 let examples = [], loaded = false, busy = false, message = '';
 const mounts = new Set();
 const escape = value => String(value).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

@@ -1,4 +1,4 @@
-import { apiFetch, configureDeepSeek, accountButton, requireBoundKey, workspaceHeaders, reportAccountError, uploadLimitMB } from "./deepseek-account.mjs";
+import { apiFetch, configureReadingSpace, workspaceHeaders, uploadLimitMB } from "./reading-space.mjs";
 import { indexPdfTextSpans, segmentDomRange, selectionFromPdfRange, pdfOffsetFromPoint, pdfSelectionPoint, pdfSelectionBetween, renderOcrTextLayer } from "./pdf-selection.mjs";
 import { createPdfScrollSync } from "./pdf-scroll-sync.mjs";
 import { highlightGroups, mergeHighlightRects, sourceFontSize } from "./pdf-highlights.mjs";
@@ -168,7 +168,7 @@ app.addEventListener("click", event => {
 });
 
 function aiLabel() {
-  return state.health.provider === "deepseek" ? "DeepSeek" : "Codex CLI";
+  return "GPT 6.1 Sol";
 }
 
 function renderLogin(error = "") {
@@ -176,7 +176,7 @@ function renderLogin(error = "") {
     <div class="login-brand">${homeBrand("线上版")}</div>
     <span class="eyebrow">Private reading room</span>
     <h1>进入你的阅读空间</h1>
-    <p>先输入网站访问密码。进入后，材料按浏览器隔离，AI 使用你自己绑定的 DeepSeek Key。</p>
+    <p>先输入网站访问密码。进入后，材料按浏览器隔离，内容由本地服务处理。</p>
     <form id="login-form"><label class="field-label" for="login-password">访问密码</label><input class="title-input" id="login-password" type="password" autocomplete="current-password" required autofocus />${error ? `<div class="login-error">${escapeHtml(error)}</div>` : ""}<button class="button primary login-submit">进入</button></form>
   </section></main>`;
   document.querySelector("#login-form").onsubmit = async (event) => {
@@ -203,7 +203,7 @@ async function boot() {
     state.authenticated = auth.authenticated;
     const healthResponse = await apiFetch("/api/health");
     if (healthResponse.ok) state.health = await healthResponse.json();
-    configureDeepSeek(state.health);
+    configureReadingSpace(state.health);
     if (!state.authenticated) renderLogin(); else render();
   } catch {
     app.innerHTML = `<div class="loading-screen"><div class="loading-card"><h2>暂时无法连接服务</h2><p>请稍后刷新页面重试。</p></div></div>`;
@@ -271,7 +271,6 @@ async function loadTask(id, { quiet = false } = {}) {
     const migration = canonicalizeLegacyHighlights(state.task);
     if (migration.length) highlightOutbox.enqueue(data.task.id, migration);
     else void highlightOutbox.flush(data.task.id);
-    reportAccountError(data.task);reportAccountError(data.task.summaryProgress);
     if (state.readingTaskId !== id || !document.querySelector(".reader")) restoreReadingState(data.task);
     if (state.route === "reader") renderReader();
     if (state.route === "summary") renderSummary();
@@ -302,7 +301,7 @@ function renderHome() {
     <main class="app-shell home-page">
       <header class="topbar"><div class="center-shell topbar-inner">
         ${homeBrand()}
-        <div class="topbar-actions">${accountButton()}</div>
+        <div class="topbar-actions"></div>
       </div></header>
       <div class="center-shell home-content">
         <section class="hero">
@@ -407,7 +406,6 @@ function setupDropzone() {
 
 async function submitImport(event) {
   event.preventDefault();
-  if(!requireBoundKey())return;
   if(state.file?.size>uploadLimitMB()*1024*1024)return toast(`文件不能超过 ${uploadLimitMB()} MB`);
   const button = document.querySelector("#submit-import");
   const form = new FormData(event.currentTarget);
@@ -559,7 +557,6 @@ async function createTaskWithProgress(form, onEvent, run) {
     for (const line of lines) {
       if (!line.trim()) continue;
       const event = JSON.parse(line);
-      reportAccountError(event);reportAccountError(event.task || event.progress);
       if (event.type === "error") throw new Error(event.error || "处理失败");
       if (event.type === "failed" && event.task) return { task: event.task };
       if (event.type === "cancelled") throw new Error("处理已取消，已完成的内容保留在阅读列表中");
@@ -868,7 +865,7 @@ function digestNotice(task) {
   if (task.status !== "ready" || !needsDigestRefinement(task)) return "";
   const busy = state.refiningHighlights.has(task.id);
   const coverageRepair = task.highlightDigest?.version === 1;
-  return `<div class="digest-notice" id="digest-notice"><strong>${coverageRepair ? "推荐重点待优化" : "AI 推荐范围偏大"}</strong><p id="digest-detail">${busy ? "正在精简推荐，原有重点会保留到完成。" : coverageRepair ? "重新核对全文主题，避免遗漏后半篇的关键内容。" : `当前覆盖正文约 ${Math.round(digestStats(task).ratio*100)}%，可精简至约四分之一。`}</p><button class="button" id="refine-highlights">${busy ? "取消筛选" : "精简推荐重点"}</button><small>${state.health.provider === "deepseek" ? "使用你的 DeepSeek 额度；" : ""}复用现有译文，保留手动重点。</small></div>`;
+  return `<div class="digest-notice" id="digest-notice"><strong>${coverageRepair ? "推荐重点待优化" : "AI 推荐范围偏大"}</strong><p id="digest-detail">${busy ? "正在精简推荐，原有重点会保留到完成。" : coverageRepair ? "重新核对全文主题，避免遗漏后半篇的关键内容。" : `当前覆盖正文约 ${Math.round(digestStats(task).ratio*100)}%，可精简至约四分之一。`}</p><button class="button" id="refine-highlights">${busy ? "取消筛选" : "精简推荐重点"}</button><small>复用现有译文，保留手动重点。</small></div>`;
 }
 
 async function refineHighlights() {
@@ -879,7 +876,6 @@ async function refineHighlights() {
     catch(error) { toast(error.message); button.disabled=false; }
     return;
   }
-  if(!requireBoundKey())return;
   state.refiningHighlights.add(task.id); button.textContent='取消筛选';
   document.querySelector('#digest-detail').textContent='正在精简推荐，原有重点会保留到完成。';
   try {
@@ -924,7 +920,7 @@ function renderReader() {
         <div class="view-switch" aria-label="阅读视图">
           <button data-view="compare" class="${state.view === "compare" ? "active" : ""}">对照</button><button data-view="original" class="${state.view === "original" ? "active" : ""}">原文</button><button data-view="translation" class="${state.view === "translation" ? "active" : ""}">译文</button>
         </div>
-        <div class="header-actions">${accountButton()}
+        <div class="header-actions">
           <button class="button" id="view-focus" aria-pressed="${state.focusMode}">${state.focusMode ? "退出聚焦" : "聚焦重点"}</button>
           <button class="button primary" id="generate-summary" ${processing || failed ? "disabled" : ""}>${isGeneratingSummary(task) ? "查看生成进度" : task.summary ? "查看摘要" : "生成摘要"}</button>
         </div>
@@ -1878,7 +1874,6 @@ function setupPdfScrollThumb() {
 }
 
 async function retryTask() {
-  if(!requireBoundKey())return;
   const taskId = state.task.id;
   const button = document.querySelector("#retry-task");
   button.disabled = true;
@@ -2257,13 +2252,7 @@ function validTargetLength(target) {
 function isGeneratingSummary(task) {
   return state.generating.has(task?.id) || task?.summaryProgress?.status === 'generating';
 }
-function summaryCostMessage() {
-  return state.health.provider === 'deepseek'
-    ? '生成摘要会使用你的 DeepSeek 额度。已保留的重点和示范文档片段会发送给 DeepSeek，按实际用量计费。'
-    : '当前本地版使用 Codex 额度，不消耗 DeepSeek 额度。已保留的重点和示范文档片段会发送给 Codex；线上使用 DeepSeek 时会消耗你的 DeepSeek 额度。';
-}
 function showSummaryOptions() {
-  if(!requireBoundKey())return;
   const task=state.task;
   if(isGeneratingSummary(task))return go('summary',task.id);
   if(!highlightedParagraphs(task).length)return toast('请先留下一些重点');
@@ -2276,7 +2265,7 @@ function showSummaryOptions() {
     <label>摘要风格<select name="style"><option value="analytical" ${options.style==='analytical'?'selected':''}>分析文章 · 连贯论述</option><option value="briefing" ${options.style==='briefing'?'selected':''}>决策简报 · 结论优先</option><option value="outline" ${options.style==='outline'?'selected':''}>要点提纲 · 分条速读</option></select></label></div>
     <label class="summary-emphasis">希望侧重什么（可选）<textarea name="emphasis" maxlength="500" rows="2" placeholder="例如：主要结论、关键数据与风险">${escapeHtml(options.emphasis || '')}</textarea></label>
     <section class="style-examples summary-examples"></section>
-    <p class="summary-cost">${summaryCostMessage()}</p><div class="dialog-actions"><button type="button" class="button cancel-summary-options">取消</button><button class="button primary" type="submit">确认并生成</button></div></form>`;
+    <div class="dialog-actions"><button type="button" class="button cancel-summary-options">取消</button><button class="button primary" type="submit">确认并生成</button></div></form>`;
   document.body.append(dialog);closeDialogOnOutside(dialog,'.summary-options-content');
   dialog.querySelector('.close-x').onclick=()=>dialog.close();dialog.querySelector('.cancel-summary-options').onclick=()=>dialog.close();
   mountStyleExamples(dialog.querySelector('.style-examples'));
@@ -2307,7 +2296,7 @@ function startSummaryClock(task) {
     try {
       const {task:fresh}=await api(`/api/tasks/${task.id}`);
       if(state.taskId!==task.id)return;
-      task.summaryProgress=fresh.summaryProgress;reportAccountError(fresh.summaryProgress);
+      task.summaryProgress=fresh.summaryProgress;
       if(fresh.summaryProgress?.status==='done' || fresh.summaryProgress?.status==='failed') {
         task.summary=fresh.summary;state.generating.delete(task.id);clearInterval(state.summaryClock);
         if(state.route==='summary')renderSummary();
@@ -2367,7 +2356,7 @@ function renderSummary() {
   const summary = task.summary;
   clearInterval(state.summaryClock);
   const generating = isGeneratingSummary(task);
-  app.innerHTML = `<main class="summary-page"><header class="topbar"><div class="center-shell topbar-inner">${homeBrand("摘要")}<div class="topbar-actions">${accountButton()}<span class="task-progress">目标约 ${task.targetLength || 2000} 字</span></div></div></header>
+  app.innerHTML = `<main class="summary-page"><header class="topbar"><div class="center-shell topbar-inner">${homeBrand("摘要")}<div class="topbar-actions"><span class="task-progress">目标约 ${task.targetLength || 2000} 字</span></div></div></header>
     <div class="summary-shell">
       <div class="summary-toolbar"><button class="back-link" id="summary-back">${icons.arrow} 返回阅读</button><div><button class="button" id="regenerate-summary" ${generating ? "disabled" : ""}>${summary ? "重新生成" : "生成摘要"}</button><button class="button" id="copy-summary" ${!summary || generating ? "disabled" : ""}>复制</button><button class="button" id="download-summary" ${!summary || generating ? "disabled" : ""}>下载 Markdown</button><button class="button primary" id="save-summary" ${!summary || generating ? "disabled" : ""}>保存修改</button></div></div>
       ${task.summaryProgress?.status === "failed" ? `<div class="stale-warning" role="alert">摘要未完成：${escapeHtml(task.summaryProgress.error || "请重试")}</div>` : ""}

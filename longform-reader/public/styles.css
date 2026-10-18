@@ -488,7 +488,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .summary-fields small { font-size:11px; font-weight:400; color:var(--muted); }
 .summary-emphasis { margin:20px 0 0; }
 .summary-emphasis textarea { resize:vertical; }
-.summary-cost { background:#faf5e6; border-left:2px solid #d9b854; padding:12px 14px; font-size:12px; line-height:1.65; margin:24px 0 20px; }
 .dialog-actions { display:flex; justify-content:flex-end; gap:10px; }
 .style-examples { border-top:1px solid var(--line); padding-top:20px; }
 .home-examples { border:1px solid var(--line); background:#fafbf9; padding:22px 26px; margin:0 0 30px; }
@@ -518,27 +517,6 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visib
 .figure-zoom-highlight { background:var(--accent-soft); color:inherit; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 .pdf-layout-content .is-pull-quote::before { position:absolute; top:-1.1em; left:0; margin:0; }
 .topbar-actions { display:flex; align-items:center; gap:12px; }
-.deepseek-dialog { max-width:620px; }
-.deepseek-model { padding:18px 20px; background:#f4f3ed; margin:20px 0; }
-.deepseek-model span { display:block; font-size:12px; color:#737d80; margin-top:5px; }
-.deepseek-dialog .title-input { width:100%; margin-top:9px; }
-.key-input-row { display:flex; align-items:stretch; gap:8px; margin-top:9px; }
-.deepseek-dialog .key-input-row .title-input { min-width:0; margin-top:0; }
-.key-input-row .key-visibility { flex:none; padding:0 14px; }
-.key-help { font-size:13px; line-height:1.7; color:#536568; margin:10px 0 0; }
-.deepseek-dialog .title-input[aria-invalid="true"] { border-color:#a74433; }
-.binding-result[data-error="true"] { color:#a74433; }
-.account-link { display:inline-block; margin:12px 0 20px; font-size:13px; color:#536568; }
-.key-privacy { font-size:13px; line-height:1.7; color:#687478; border-top:1px solid #e1e5e3; padding-top:16px; }
-.key-privacy p { margin:5px 0 10px; }
-.binding-result { min-height:24px; font-size:14px; line-height:1.6; }
-.bound-key { font-size:13px; color:#4e6860; }
-.deepseek-notice { position:fixed; right:24px; bottom:24px; z-index:2000; width:min(370px,calc(100vw - 48px)); padding:22px; background:#fffaf0; color:#303534; border:1px solid #ddcba4; box-shadow:0 8px 30px #20251e18; }
-.deepseek-notice strong { display:block; padding-right:18px; }
-.deepseek-notice p { font-size:14px; line-height:1.7; margin:8px 0 16px; }
-.deepseek-notice>div { display:flex; gap:10px; }
-.notice-dismiss { position:absolute; right:10px; top:8px; border:0; background:none; color:#707773; font-size:22px; cursor:pointer; }
-
 /* The library is a quiet reading workspace; PDF typography stays independent. */
 .home-page { background: #f7f6f2; }
 .home-page .topbar { height: 72px; background: #fffefa; border-color: #e5e2d9; }

@@ -1,5 +1,6 @@
 import express from "express";
-import { userOwned, workspace, jobKey, userKey, accessMiddleware, deepseekModel, deepseekURL, providerError, fetchBalance, requireBalance } from "./deepseek-access.mjs";
+import { browserSpaces, workspace, jobKey, accessMiddleware } from "./reading-space.mjs";
+import { existsSync } from "node:fs";
 import multer from "multer";
 import { createCanvas } from "@napi-rs/canvas";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -30,18 +31,18 @@ const PORT = Number(process.env.PORT || 4173);
 const HOST = "127.0.0.1";
 const IS_VERCEL = process.env.VERCEL === "1";
 const USE_CLOUD_STORAGE = IS_VERCEL || process.env.STORAGE_PROVIDER === "blob";
-const USE_DEEPSEEK = userOwned || process.env.AI_PROVIDER === "deepseek";
-const CODEX_MODEL = process.env.CODEX_MODEL || "gpt-5.6-sol";
-const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || "medium";
-const DEEPSEEK_BASE_URL = deepseekURL;
-const DEEPSEEK_MODEL = deepseekModel;
+const CODEX_MODEL = process.env.CODEX_MODEL || "gpt-6.1-sol";
+const bundledCodex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex";
+const CODEX_BIN = process.env.CODEX_BIN || (process.platform === "darwin" && existsSync(bundledCodex) ? bundledCodex : "codex");
+const CODEX_SERVICE_TIER = "default";
+const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || "low";
 const STYLE_KEY = "longform-reading/settings/style-examples.json";
 const STYLE_FILE = path.join(DATA_DIR, "settings", "style-examples.json");
 const SUMMARY_RUNTIME_ID = randomUUID();
-function scopedRoot() { return userOwned ? path.join(DATA_DIR, 'spaces', workspace()) : DATA_DIR; }
-function blobPrefix(kind) { return userOwned ? `longform-reading/spaces/${workspace()}/${kind}/` : `longform-reading/${kind}/`; }
-function stylesFile() { return userOwned ? path.join(scopedRoot(),'settings/style-examples.json') : STYLE_FILE; }
-function stylesKey() { return userOwned ? `${blobPrefix('settings')}style-examples.json` : STYLE_KEY; }
+function scopedRoot() { return browserSpaces ? path.join(DATA_DIR, 'spaces', workspace()) : DATA_DIR; }
+function blobPrefix(kind) { return browserSpaces ? `longform-reading/spaces/${workspace()}/${kind}/` : `longform-reading/${kind}/`; }
+function stylesFile() { return browserSpaces ? path.join(scopedRoot(),'settings/style-examples.json') : STYLE_FILE; }
+function stylesKey() { return browserSpaces ? `${blobPrefix('settings')}style-examples.json` : STYLE_KEY; }
 
 if (!IS_VERCEL) {
   await Promise.all([
@@ -249,13 +250,6 @@ app.use("/api", (request, response, next) => {
 });
 
 app.use('/api', accessMiddleware);
-app.use('/api', async (request,response,next)=>{
-  const needsModel=request.method==='POST' && (['/tasks','/explain'].includes(request.path) || /^\/tasks\/[^/]+\/(summary|retry|upgrade|refine-highlights)$/.test(request.path));
-  try {if(userOwned && needsModel)await requireBalance();next();}catch(error){next(error);}
-});
-app.get('/api/deepseek/balance',async(_request,response,next)=>{
-  try {response.json({...await fetchBalance(),model:DEEPSEEK_MODEL});}catch(error){next(error);}
-});
 
 function publicTask(task, includeParagraphs = true) {
   const result = { ...task, ...processingCounts(task) };
@@ -638,77 +632,6 @@ function quotesToRanges(text, quotes, kind = "ai") {
   }).filter(Boolean));
 }
 
-async function runDeepSeek(prompt, schemaName, signal, schemaOverride) {
-  signal?.throwIfAborted();
-  const apiKey = userKey();
-  const maxTokens = schemaName === "summary.schema.json"
-    ? 12000
-    : ["analyze.schema.json", "document-analysis.schema.json", "translate.schema.json"].includes(schemaName)
-      ? 16000
-      : 4000;
-  const outputSchema = schemaOverride || JSON.parse(await readFile(path.join(SCHEMA_DIR, schemaName), "utf8"));
-  // DeepSeek enforces strict tool schemas on its beta endpoint.
-  const completionBase = /^https:\/\/api\.deepseek\.com(?:\/v1|\/beta)?\/?$/.test(DEEPSEEK_BASE_URL)
-    ? "https://api.deepseek.com/beta" : DEEPSEEK_BASE_URL.replace(/\/$/, "");
-  let lastError;
-
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    signal?.throwIfAborted();
-    const controller = new AbortController();
-    const cancel = () => controller.abort(signal.reason);
-    signal?.addEventListener("abort", cancel, { once: true });
-    const timeout = setTimeout(() => controller.abort(), 4 * 60 * 1000);
-    try {
-      const response = await fetch(`${completionBase}/chat/completions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: DEEPSEEK_MODEL,
-          messages: [
-            { role: "system", content: "Follow the requested contract exactly and call return_result once with the complete answer." },
-            { role: "user", content: prompt },
-          ],
-          tools: [{
-            type: "function",
-            function: {
-              name: "return_result",
-              description: "Return the complete structured result for this request.",
-              parameters: outputSchema,
-              strict: true,
-            },
-          }],
-          tool_choice: { type: "function", function: { name: "return_result" } },
-          thinking: { type: attempt === 0 && schemaName !== "explain.schema.json" ? "enabled" : "disabled" },
-          reasoning_effort: "high",
-          max_tokens: maxTokens,
-          temperature: 0.2,
-        }),
-        signal: controller.signal,
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw providerError(response.status);
-      }
-      const message = payload?.choices?.[0]?.message;
-      const argumentsText = message?.tool_calls?.find((call) => call.function?.name === "return_result")?.function?.arguments;
-      const content = argumentsText || message?.content;
-      if (!content?.trim()) throw new Error("DeepSeek 返回了空结果");
-      return JSON.parse(content);
-    } catch (error) {
-      signal?.throwIfAborted();
-      if([401,402,429].includes(error.status))throw error;
-      lastError = error.name === "AbortError" ? new Error("DeepSeek API 处理超时") : error;
-    } finally {
-      clearTimeout(timeout);
-      signal?.removeEventListener("abort", cancel);
-    }
-  }
-  throw lastError;
-}
-
 async function runCodex(prompt, schemaName, signal, schemaOverride) {
   signal?.throwIfAborted();
   const outputPath = path.join(RUNTIME_DIR, `codex-${randomUUID()}.json`);
@@ -723,6 +646,7 @@ async function runCodex(prompt, schemaName, signal, schemaOverride) {
     "--ignore-rules",
     "--model", CODEX_MODEL,
     "-c", `model_reasoning_effort=${JSON.stringify(CODEX_REASONING_EFFORT)}`,
+    "-c", `service_tier=${JSON.stringify(CODEX_SERVICE_TIER)}`,
     "--color", "never",
     "-C", WORKER_DIR,
     "--output-schema", schemaPath,
@@ -731,7 +655,7 @@ async function runCodex(prompt, schemaName, signal, schemaOverride) {
   ];
 
   return new Promise((resolve, reject) => {
-    const child = spawn("codex", args, {
+    const child = spawn(CODEX_BIN, args, {
       cwd: WORKER_DIR,
       env: process.env,
       stdio: ["pipe", "ignore", "pipe"],
@@ -777,7 +701,8 @@ async function runCodex(prompt, schemaName, signal, schemaOverride) {
 }
 
 async function runAI(prompt, schemaName, signal, schemaOverride) {
-  return USE_DEEPSEEK ? runDeepSeek(prompt, schemaName, signal, schemaOverride) : runCodex(prompt, schemaName, signal, schemaOverride);
+  if (IS_VERCEL) throw Object.assign(new Error("模型处理需要在本地电脑运行，请使用本地版。"), { code: "LOCAL_CLI_REQUIRED", status: 503 });
+  return runCodex(prompt, schemaName, signal, schemaOverride);
 }
 
 async function refineEvidence(task, signal) {
@@ -1202,21 +1127,14 @@ function validateHighlightRanges(ranges, textLength) {
 }
 
 app.get("/api/health", (_request, response) => {
-  const probe = USE_DEEPSEEK ? null : spawnSync("codex", ["--version"], { encoding: "utf8" });
+  const probe = IS_VERCEL ? null : spawnSync(CODEX_BIN, ["--version"], { encoding: "utf8", timeout: 5000 });
   response.json({
-    ok: true,
-    online: IS_VERCEL,
-    provider: USE_DEEPSEEK ? "deepseek" : "codex",
-    model: USE_DEEPSEEK ? DEEPSEEK_MODEL : CODEX_MODEL,
-    ...(USE_DEEPSEEK ? {} : {
-      reasoningEffort: CODEX_REASONING_EFFORT,
-      cliVersion: (probe?.stdout || "").trim(),
-    }),
-    storage: USE_CLOUD_STORAGE ? "private-blob" : "local",
-    ocr: ocrProvider(),
-    available: USE_DEEPSEEK ? (userOwned || Boolean(process.env.DEEPSEEK_API_KEY)) : probe?.status === 0,
-    userOwnedKeys:userOwned,
-    uploadLimitMB:IS_VERCEL ? 4 : 25,
+    ok: true, online: IS_VERCEL, provider: "codex", model: CODEX_MODEL,
+    reasoningEffort: CODEX_REASONING_EFFORT, serviceTier: CODEX_SERVICE_TIER,
+    cliVersion: (probe?.stdout || "").trim(),
+    storage: USE_CLOUD_STORAGE ? "private-blob" : "local", ocr: ocrProvider(),
+    available: probe?.status === 0, browserSpaces,
+    uploadLimitMB: IS_VERCEL ? 4 : 25,
   });
 });
 

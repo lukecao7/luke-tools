@@ -47,7 +47,7 @@ try {
   assert.equal(resumed.totalTranslationParagraphs, 2);
   assert.equal(resumed.translatedParagraphs, 1, "Repaired paragraphs count only after alignment is complete");
 
-  for (const file of ["server.mjs", "deepseek-access.mjs", "task-updates.mjs", "package.json"]) await copyFile(path.join(root, file), path.join(directory, file));
+  for (const file of ["server.mjs", "reading-space.mjs", "task-updates.mjs", "package.json"]) await copyFile(path.join(root, file), path.join(directory, file));
   for (const name of ["node_modules", "ocr", "schemas", "public"]) await symlink(path.join(root, name), path.join(directory, name));
   await mkdir(path.join(directory, "bin"));
   await writeFile(path.join(directory, "sample.txt"), sample);
@@ -83,7 +83,7 @@ const timer = setInterval(() => {
   const port = listener.address().port;
   await new Promise(resolve => listener.close(resolve));
   const url = `http://127.0.0.1:${port}`;
-  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env, VERCEL: "0", STORAGE_PROVIDER: "local", AI_PROVIDER: "codex", APP_PASSWORD: "", PORT: String(port), TEST_GATE: directory, PATH: `${path.join(directory, "bin")}:${process.env.PATH}` }, stdio: "ignore" });
+  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env,CODEX_BIN:"codex",READING_SPACES:"0", VERCEL: "0", STORAGE_PROVIDER: "local", AI_PROVIDER: "codex", APP_PASSWORD: "", PORT: String(port), TEST_GATE: directory, PATH: `${path.join(directory, "bin")}:${process.env.PATH}` }, stdio: "ignore" });
   await until(async () => { try { return (await fetch(url + "/api/tasks")).ok; } catch { return false; } });
   if (serve) {
     console.log(JSON.stringify({ url, directory, sample: path.join(directory, "sample.txt") }));

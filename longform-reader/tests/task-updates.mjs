@@ -35,7 +35,7 @@ try {
   assert.deepEqual(stored.highlights, ["new"]);
   assert.equal(stored.summary, "generated");
 
-  for (const file of ["server.mjs", "deepseek-access.mjs", "task-updates.mjs", "package.json"]) await copyFile(path.join(root, file), path.join(directory, file));
+  for (const file of ["server.mjs", "reading-space.mjs", "task-updates.mjs", "package.json"]) await copyFile(path.join(root, file), path.join(directory, file));
   for (const name of ["node_modules", "ocr", "schemas", "public"]) await symlink(path.join(root, name), path.join(directory, name));
   await mkdir(path.join(directory, "bin"));
   await mkdir(path.join(directory, "data"));
@@ -63,7 +63,7 @@ const timer = setInterval(() => {
   const port = listener.address().port;
   await new Promise(resolve => listener.close(resolve));
   const gate = path.join(directory, "model");
-  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env, VERCEL: "0", STORAGE_PROVIDER: "local", AI_PROVIDER: "codex", APP_PASSWORD: "", PORT: String(port), TEST_GATE: gate, PATH: `${path.join(directory, "bin")}:${process.env.PATH}` }, stdio: "ignore" });
+  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env,CODEX_BIN:"codex",READING_SPACES:"0", VERCEL: "0", STORAGE_PROVIDER: "local", AI_PROVIDER: "codex", APP_PASSWORD: "", PORT: String(port), TEST_GATE: gate, PATH: `${path.join(directory, "bin")}:${process.env.PATH}` }, stdio: "ignore" });
   const base = `http://127.0.0.1:${port}/api/tasks/${id}`;
   await until(async () => { try { return (await fetch(base)).ok; } catch { return false; } });
   const request = (suffix, method, body) => fetch(base + suffix, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -98,7 +98,7 @@ const timer = setInterval(() => {
   assert.deepEqual(listed[0].readingProgress, saved.readingProgress);
   server.kill();
   await new Promise(resolve => server.once("exit", resolve));
-  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env, VERCEL: "0", STORAGE_PROVIDER: "local", APP_PASSWORD: "", PORT: String(port) }, stdio: "ignore" });
+  server = spawn(process.execPath, ["server.mjs"], { cwd: directory, env: { ...process.env,CODEX_BIN:"codex",READING_SPACES:"0", VERCEL: "0", STORAGE_PROVIDER: "local", APP_PASSWORD: "", PORT: String(port) }, stdio: "ignore" });
   await until(async () => { try { return (await fetch(base)).ok; } catch { return false; } });
   assert.deepEqual((await (await fetch(base)).json()).task.readingProgress, saved.readingProgress);
   console.log(JSON.stringify({ ok: true, checks: ["cloud conflict merge", "zero length rejected", "parallel highlight saves", "generation preserves newer highlights and reading progress", "changed evidence marks summary stale", "failed batch atomic", "queue recovers after invalid edit", "late progress cannot rewind", "invalid paragraph rejected", "list includes resume progress", "progress survives server restart"] }));

@@ -21,7 +21,7 @@ try {
  const whole=linkedTranslationRanges(original,p.id,0,p.original.length).ranges;
  const small=linkedTranslationRanges(original,p.id,20,60).ranges;
  assert.ok(small.reduce((n,r)=>n+r.end-r.start,0)<whole.reduce((n,r)=>n+r.end-r.start,0));
- for(const name of ['server.mjs','deepseek-access.mjs','task-updates.mjs','package.json'])await copyFile(path.join(root,name),path.join(dir,name));
+ for(const name of ['server.mjs','reading-space.mjs','task-updates.mjs','package.json'])await copyFile(path.join(root,name),path.join(dir,name));
  for(const name of ['public','ocr','schemas','node_modules'])await symlink(path.join(root,name),path.join(dir,name));
  await mkdir(path.join(dir,'bin'));await mkdir(path.join(dir,'data/sources'),{recursive:true});
  const id=original.id;original.summary=null;delete original.summaryProgress;delete original.summaryOptions;
@@ -34,7 +34,7 @@ try {
  await chmod(mock,0o755);
  const listener=createServer().listen(0,'127.0.0.1');await new Promise(r=>listener.once('listening',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
  const url=`http://127.0.0.1:${port}`;
- server=spawn(process.execPath,['server.mjs'],{cwd:dir,env:{...process.env,VERCEL:'0',STORAGE_PROVIDER:'local',AI_PROVIDER:'codex',APP_PASSWORD:'',PORT:String(port),TEST_GATE:dir,PATH:`${dir}/bin:${process.env.PATH}`},stdio:'ignore'});
+ server=spawn(process.execPath,['server.mjs'],{cwd:dir,env:{...process.env,CODEX_BIN:"codex",READING_SPACES:"0",VERCEL:'0',STORAGE_PROVIDER:'local',AI_PROVIDER:'codex',APP_PASSWORD:'',PORT:String(port),TEST_GATE:dir,PATH:`${dir}/bin:${process.env.PATH}`},stdio:'ignore'});
  await until(async()=>{try{return(await fetch(url+'/api/tasks')).ok;}catch{return false;}});
  if(serve){console.log(JSON.stringify({url,dir,id,exampleA:dir+'/style-a.txt',exampleB:dir+'/style-b.md'}));await new Promise(r=>{process.once('SIGINT',r);process.once('SIGTERM',r);});}
  else{

@@ -35,7 +35,7 @@ if (command === "stop") {
     const errors = openSync(path.join(runtime, 'stderr.log'), 'a');
     try {
       const child = spawn(process.execPath, [path.join(root, 'server.mjs')], { cwd: root, detached: true,
-        env: { ...process.env, PORT: '4173', VERCEL: '0', STORAGE_PROVIDER: 'local', AI_PROVIDER: 'deepseek', USER_OWNED_KEYS: '1', APP_PASSWORD: '' },
+        env: { ...process.env, PORT: '4173', VERCEL: '0', STORAGE_PROVIDER: 'local', READING_SPACES: '1', CODEX_MODEL: 'gpt-6.1-sol', CODEX_REASONING_EFFORT: 'low', APP_PASSWORD: '' },
         stdio: ['ignore', output, errors] });
       await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject); });
       writeFileSync(pidFile, String(child.pid)); child.unref();
