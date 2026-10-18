@@ -56,7 +56,25 @@ export function pdfMathBlocks(task) {
 }
 
 const pageRenders = new WeakMap();
-export async function renderPdfMath({ page, element, block, onReady }) {
+// A rectangular page crop can include descenders from the preceding prose
+// line. Filter PDF text by its original baseline before painting, keeping the
+// actual glyphs intact (including accents and subscripts) and all vector rules.
+export function filterFormulaText(context, rects, width, height) {
+  const originals = new Map();
+  const regions = rects.map(r => ({ left: r.left * width, right: (r.left + r.width) * width,
+    baseline: (r.top + r.height) * height, tolerance: Math.max(1, r.height * height * .24) }));
+  for (const name of ['fillText', 'strokeText']) {
+    const original = context[name];
+    originals.set(name, original);
+    context[name] = function(text, x, y, ...args) {
+      const m = this.getTransform(), px = m.a * x + m.c * y + m.e, py = m.b * x + m.d * y + m.f;
+      if (regions.some(r => px >= r.left - r.tolerance && px <= r.right + r.tolerance && Math.abs(py - r.baseline) <= r.tolerance)) original.call(this, text, x, y, ...args);
+    };
+  }
+  return () => { for (const [name, original] of originals) context[name] = original; };
+}
+
+export async function renderPdfMath({ page, element, block, blocks = [block], paragraphs = [], onReady }) {
   if (element.dataset.rendering || !element.isConnected) return;
   element.dataset.rendering = 'true';
   try {
@@ -66,7 +84,12 @@ export async function renderPdfMath({ page, element, block, onReady }) {
         const viewport = page.getViewport({ scale: 2.5 });
         const canvas = document.createElement('canvas');
         canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        const context = canvas.getContext('2d');
+        const ids = new Set(blocks.flatMap(b => b.paragraphIds));
+        const rects = paragraphs.filter(p => ids.has(p.id)).flatMap(p => p.sourceSegments || []).map(s => s.rect).filter(Boolean);
+        const restore = rects.length ? filterFormulaText(context, rects, viewport.width, viewport.height) : () => {};
+        try { await page.render({ canvasContext: context, viewport }).promise; }
+        finally { restore(); }
         return canvas;
       })();
       pageRenders.set(page, pending);

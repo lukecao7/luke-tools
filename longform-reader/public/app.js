@@ -1553,7 +1553,7 @@ async function ensureMath(element) {
   const block = state.mathBlocks.find(b => b.id === element.dataset.mathId);
   if (!block) return;
   const page = await state.pdfDocument.getPage(block.pageNumber);
-  return renderPdfMath({ page, block, element });
+  return renderPdfMath({ page, block, element, blocks: state.mathBlocks.filter(b => b.pageNumber === block.pageNumber), paragraphs: state.task.paragraphs });
 }
 
 function layoutTranslatedPages() {

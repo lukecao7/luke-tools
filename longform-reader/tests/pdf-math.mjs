@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { pdfMathBlocks } from '../public/pdf-math.mjs';
+import { pdfMathBlocks, filterFormulaText } from '../public/pdf-math.mjs';
 import { translationFragments } from '../public/translation-presentation.mjs';
 
 const segment = (text, left, top, width = .6, height = .013) => ({ text, start: 0, end: text.length, rect: { left, top, width, height } });
@@ -21,6 +21,21 @@ assert.ok(blocks[0].rect.top < .15 && blocks[0].rect.top + blocks[0].rect.height
 assert.ok(!blocks[0].paragraphIds.includes('inline-subscript'), 'An inline subscript cannot pull a display crop over nearby prose');
 const ascii = pdfMathBlocks({ pageCount: 1, paragraphs: [p('ascii', 'x = y + z', .2, .4), p('tag', '(2)', .2, .85)] });
 assert.equal(ascii.length, 1, 'ASCII-only mathematics also survives');
+
+// The earlier crop started at the previous line's baseline and leaked its
+// descenders. Painting is filtered by the formula baseline, rather than by
+// cutting closer to the formula and risking its accents or subscripts.
+const painted = [];
+const context = { getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }),
+  fillText(text) { painted.push(text); }, strokeText(text) { painted.push(text); } };
+const originalFill = context.fillText;
+const restore = filterFormulaText(context, [{ left: .38, top: .502, width: .29, height: .013 }], 1000, 1000);
+context.fillText('previous prose descender', 400, 498);
+context.fillText('formula', 400, 515);
+context.strokeText('accent', 420, 513);
+context.fillText('adjacent unrelated text', 800, 515);
+assert.deepEqual(painted, ['formula', 'accent']);
+restore(); assert.equal(context.fillText, originalFill);
 
 const first = { ...p('first', 'A sentence starts here', .85), translationVisible: true, translation: '一个完整的句子。下一页的正文。',
   translationMembers: ['first', 'next'], translationAlignment: [
