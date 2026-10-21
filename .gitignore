@@ -12,3 +12,8 @@ __pycache__/
 !.env.example
 longform-reader/data/
 longform-reader/tmp/
+
+# PDF 工具生成的本地文件
+/pdf-tools/pdf_downloads/
+/pdf-tools/debug.html
+/pdf-tools/*.pdf

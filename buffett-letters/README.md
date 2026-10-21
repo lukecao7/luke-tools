@@ -29,7 +29,7 @@ python3 -m pip install -r requirements.txt
 python3 scripts/mirror_reference_site.py
 ```
 
-构建结果会输出到 `dist/`，仓库里已经带好了 GitHub Pages workflow：
+构建结果会输出到 `dist/`，子目录内保留了独立项目使用的 GitHub Pages workflow；在工具合集仓库中不会自动触发：
 
 - `.github/workflows/deploy-pages.yml`
 
@@ -71,3 +71,7 @@ python3 scripts/company_evidence.py --company coca-cola --out output/coca_cola_e
 ## 当前语料边界
 
 本地 PDF 覆盖 `1977` 到 `2024` 年伯克希尔股东信。像美国运通在 `1964` 年的第一次经典买入，单靠本地语料无法完整复原，需要额外补充早期合伙人信或外部资料。
+
+## 已有合并文件
+
+`exports/letters-merged.pdf` 是整理前已有的股东信合并文件。原始年度 PDF 仍保留在本目录，合并文件单独存放，避免再次合并时重复计入。

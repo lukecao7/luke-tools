@@ -71,7 +71,7 @@ def merge_pdfs(input_dir: Path, output_file: Path) -> bool:
 def main():
     if len(sys.argv) < 2:
         print("用法: python pdf_merger.py <输入目录> [输出文件名]")
-        print("示例: python pdf_merger.py ./Buffet_Letters buffett_letters_all.pdf")
+        print("示例: python pdf_merger.py ../buffett-letters buffett_letters_all.pdf")
         print("\n功能: 将目录下所有 PDF 合并成一个文件，并为每个 PDF 添加书签")
         sys.exit(1)
     
