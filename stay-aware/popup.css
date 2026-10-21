@@ -1,35 +1,3 @@
-:root {
-  color-scheme: light;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  color: #353443;
-  background: #fff;
-}
-* { box-sizing: border-box; }
-body { width: 320px; margin: 0; padding: 20px; }
-header { display: flex; gap: 9px; align-items: center; margin-bottom: 20px; }
-h1 { font-size: 15px; margin: 0; font-weight: 650; letter-spacing: .2px; }
-header p { font-size: 10px; color: #7a7389; margin: 3px 0 0; }
-.badge { margin-left: auto; padding: 4px 7px; border-radius: 5px; background: #f5f3fc; color: #7461a0; font-size: 9px; }
-.total { background: #f6f5fc; border: 1px solid #eeebf8; border-radius: 12px; padding: 17px 18px; }
-.total span { font-size: 11px; color: #746b85; }
-.total strong { display: block; margin: 6px 0 8px; color: #7461b4;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-variant-numeric: tabular-nums; font-size: 34px; line-height: 1.2; font-weight: 600; letter-spacing: -1px; }
-.total small { font-size: 9px; color: #746b85; }
-.sites { padding: 10px 0 16px; }
-.row { display: flex; align-items: center; justify-content: space-between; padding: 11px 1px; font-size: 11px; }
-.sites .row + .row { border-top: 1px solid #f3f1f7; }
-.row strong { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 500; color: #656075; }
-.site-name { display: flex; gap: 9px; align-items: center; }
-.dot { width: 6px; height: 6px; border-radius: 50%; background: #8d81ca; }
-.sites .row:nth-child(2) .dot { background: #d19aaa; }
-.sites .row:nth-child(3) .dot { background: #92aacb; }
-.history { border-top: 1px solid #eeecf4; padding-top: 13px; }
-.history h2 { font-size: 11px; font-weight: 500; color: #7a7389; margin: 0 0 7px; }
-.history .row { padding: 5px 0; font-size: 10px; color: #7a7389; }
-.history .row strong { font-size: 10px; color: #7a7389; }
-.explain { font-size: 10px; line-height: 1.8; margin: 16px 0; color: #7a7389; }
-footer { display: flex; align-items: center; gap: 5px; border-top: 1px solid #f0eef5;
-  padding-top: 12px; font-size: 9px; color: #7a7389; }
-.footer-dot { width: 4px; height: 4px; border-radius: 50%; background: #aaa0c7; }
+/* Give Chrome a preferred width independent of its initial popup viewport. */
+html { width: 600px; overflow-x: hidden; background: #fff; }
+body { width: 600px; max-width: 100vw; margin: 0; }

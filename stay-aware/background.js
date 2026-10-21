@@ -11,11 +11,26 @@ async function loadState() {
     browserEpoch = crypto.randomUUID();
     await chrome.storage.session.set({browserEpoch});
   }
-  state = stored.ledger?.version === 1 ? stored.ledger : C.freshState(browserEpoch);
+  state = [1, 2, 3, 4].includes(stored.ledger?.version) ? C.upgradeState(stored.ledger) : C.freshState(browserEpoch);
   if (state.epoch !== browserEpoch) {
     state.epoch = browserEpoch;
     state.active = null;
     state.sessions = {};
+  }
+  await pruneSessions();
+  if ([1, 2, 3].includes(stored.ledger?.version)) {
+    // Keep the original aggregates recoverable; migration only runs once.
+    const backupKey = stored.ledger.version === 1 ? "ledgerBeforeSixAm"
+      : stored.ledger.version === 2 ? "ledgerBeforeHourly" : "ledgerBeforeSharedSessions";
+    await chrome.storage.local.set({[backupKey]: stored.ledger, ledger: state});
+  }
+}
+async function pruneSessions(changedTabId, changedSite) {
+  const tabs = await chrome.tabs.query({});
+  const openSites = new Set(tabs.map(tab => tab.id === changedTabId ? changedSite
+    : C.siteForUrl(tab.pendingUrl || tab.url)).filter(Boolean));
+  for (const site of Object.keys(state.sessions)) {
+    if (!openSites.has(site)) delete state.sessions[site];
   }
 }
 function serialized(task) {
@@ -25,18 +40,25 @@ function serialized(task) {
 }
 async function save() {
   const dates = Object.keys(state.days).sort();
-  for (const date of dates.slice(0, Math.max(0, dates.length - 90))) delete state.days[date];
+  for (const date of dates.slice(0, Math.max(0, dates.length - 90))) {
+    delete state.days[date];
+    delete state.hours[date];
+  }
   // Ledger and cursor are one write, so a worker restart cannot replay an interval.
   await chrome.storage.local.set({ledger: state});
 }
-function snapshot(now, tabId, site) {
+function snapshot(now, tabId, site, documentId) {
   const date = C.dayKey(now);
   const row = state.days[date] || {};
   return {
-    ok: true, date, at: now, site, today: row, totalMs: C.total(row),
+    ok: true, version: chrome.runtime.getManifest().version, date, at: now, site, today: row, totalMs: C.total(row),
+    hourly: state.hours[date] || {},
     siteMs: row[site] || 0,
-    sessionMs: state.sessions[tabId]?.site === site ? state.sessions[tabId].ms : 0,
-    running: state.active?.tabId === tabId && state.active?.site === site,
+    sessionMs: state.sessions[site]?.ms || 0,
+    running: state.active?.tabId === tabId && state.active?.site === site
+      && state.active?.documentId === documentId && now - state.active.lastSeen <= C.MAX_GAP
+      && (!Number.isFinite(state.active.countUntil) || now < state.active.countUntil),
+    runningUntil: state.active?.countUntil ?? null,
     position: state.position,
     history: Object.entries(state.days).sort(([a], [b]) => b.localeCompare(a)).slice(0, 7)
       .map(([date, sites]) => ({date, ms: C.total(sites)}))
@@ -72,16 +94,35 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     const tab = await chrome.tabs.get(sender.tab.id).catch(() => null);
     const win = tab ? await chrome.windows.get(tab.windowId).catch(() => null) : null;
     const lockState = await chrome.idle.queryState(60);
-    const running = Boolean(message.visible && tab?.active && win?.focused && lockState !== "locked" && C.siteForUrl(tab.url) === site);
-    C.advance(state, at);
+    // Use the page's event time, bounded by the heartbeat lease, so delivery
+    // latency is not added to a pause. Never move an existing cursor backwards.
+    const observedAt = Number.isFinite(message.observedAt) ? Math.min(at, Math.max(at - C.MAX_GAP, message.observedAt)) : at;
+    const lastInteractionAt = Number.isFinite(message.lastInteractionAt) ? Math.min(observedAt, message.lastInteractionAt) : undefined;
+    const countUntil = C.recordingUntil(message.playback, lastInteractionAt);
+    const reason = !message.visible ? "hidden" : !tab?.active ? "inactive-tab"
+      : !win ? "window-unavailable" : win.state === "minimized" ? "minimized-window"
+      : !win.focused && message.playback !== "playing" ? "unfocused-window"
+      : lockState === "locked" ? "locked"
+      : C.siteForUrl(tab.url) !== site ? "left-site"
+      : countUntil !== null && countUntil <= observedAt ? "idle" : "recording";
+    const running = reason === "recording";
+    const cursorAt = Math.max(state.active?.at || observedAt, observedAt);
+    // A throttled interaction can arrive after the old deadline. Extend only
+    // an overlapping active interval; an interaction after expiry starts anew.
+    if (state.active?.tabId === sender.tab.id && state.active.documentId === sender.documentId
+      && Number.isFinite(state.active.countUntil) && lastInteractionAt >= state.active.at
+      && lastInteractionAt <= state.active.countUntil) {
+      state.active.countUntil = Math.max(state.active.countUntil, lastInteractionAt + C.INTERACTION_TIMEOUT);
+    }
+    C.advance(state, cursorAt);
     if (running) {
-      if (state.sessions[tab.id]?.site !== site) state.sessions[tab.id] = {site, ms: 0};
-      state.active = {tabId: tab.id, documentId: sender.documentId, site, at, lastSeen: at};
+      state.sessions[site] ||= {site, ms: 0};
+      state.active = {tabId: tab.id, documentId: sender.documentId, site, at: cursorAt, lastSeen: at, countUntil};
     } else if (state.active?.tabId === sender.tab.id && state.active?.documentId === sender.documentId) {
       state.active = null;
     }
     await save();
-    return snapshot(at, sender.tab.id, site);
+    return {...snapshot(at, sender.tab.id, site, sender.documentId), reason};
   }).then(respond, () => respond({ok: false, error: "记录暂时中断，请刷新页面"}));
   return true;
 });
@@ -105,9 +146,9 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
   serialized(async () => {
     C.advance(state, at);
     const tab = await chrome.tabs.get(tabId).catch(() => null);
-    const nextSite = C.siteForUrl(change.url || tab?.url);
+    const nextSite = C.siteForUrl(change.url || tab?.pendingUrl || tab?.url);
     if (state.active?.tabId === tabId && (state.active.site !== nextSite || change.status === "loading")) state.active = null;
-    if (state.sessions[tabId]?.site !== nextSite && change.status !== "loading") delete state.sessions[tabId];
+    await pruneSessions(tabId, nextSite);
     await save();
     if (nextSite) ping(tabId);
   });
@@ -117,7 +158,7 @@ chrome.tabs.onRemoved.addListener(tabId => {
   serialized(async () => {
     C.advance(state, at);
     if (state.active?.tabId === tabId) state.active = null;
-    delete state.sessions[tabId];
+    await pruneSessions();
     await save();
   });
 });

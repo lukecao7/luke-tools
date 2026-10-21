@@ -1,21 +1,59 @@
 {
   "manifest_version": 3,
   "name": "别刷忘了 · 常驻时长提醒",
-  "version": "1.2.1",
+  "version": "1.6.3",
   "minimum_chrome_version": "120",
-  "description": "自动记录 B 站、小红书、YouTube 的前台浏览时间。常驻提醒，没有关闭和暂停按钮，支持视频全屏。",
-  "permissions": ["storage", "idle"],
+  "description": "记录 B 站、小红书、YouTube 的浏览时长。手绘心形随时长填满，每 5 分钟放大停留、散成小花后回到空心，支持视频全屏。",
+  "permissions": [
+    "storage",
+    "idle"
+  ],
   "host_permissions": [
     "*://*.bilibili.com/*",
     "*://*.xiaohongshu.com/*",
     "*://*.youtube.com/*"
   ],
-  "background": {"service_worker": "background.js"},
-  "content_scripts": [{
-    "matches": ["*://*.bilibili.com/*", "*://*.xiaohongshu.com/*", "*://*.youtube.com/*"],
-    "js": ["core.js", "content.js"],
-    "run_at": "document_start"
-  }],
-  "action": {"default_title": "今天刷了多久", "default_popup": "popup.html"},
-  "icons": {"16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png"}
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.bilibili.com/*",
+        "*://*.xiaohongshu.com/*",
+        "*://*.youtube.com/*"
+      ],
+      "exclude_matches": [
+        "*://*.studio.youtube.com/*"
+      ],
+      "js": [
+        "core.js",
+        "stats.js",
+        "heart.js",
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/paint-heart.png"
+      ],
+      "matches": [
+        "*://*.bilibili.com/*",
+        "*://*.xiaohongshu.com/*",
+        "*://*.youtube.com/*"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "今天刷了多久",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
 }
