@@ -13,7 +13,7 @@ __pycache__/
 longform-reader/data/
 longform-reader/tmp/
 
-# PDF 工具生成的本地文件
-/pdf-tools/pdf_downloads/
-/pdf-tools/debug.html
-/pdf-tools/*.pdf
+# PDF 合并工具生成的本地文件
+/pdf-merger/pdf_downloads/
+/pdf-merger/debug.html
+/pdf-merger/*.pdf
