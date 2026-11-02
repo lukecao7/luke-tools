@@ -60,7 +60,7 @@ const state = {
   collapsedToc: new Set(),
   authenticated: false,
   authChecked: false,
-  health: { online: false, provider: "codex", storage: "local" },
+  health: { online: false, provider: "openai", storage: "local" },
 };
 
 const readingStore = createReadingProgressStore({

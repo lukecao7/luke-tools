@@ -35,7 +35,7 @@ fs.writeFileSync(process.argv[process.argv.indexOf('-o') + 1], JSON.stringify(re
   const listener = createServer().listen(0, '127.0.0.1'); await new Promise(r => listener.once('listening', r));
   const port = listener.address().port; await new Promise(r => listener.close(r));
   const url = `http://127.0.0.1:${port}`;
-  server = spawn(process.execPath, ['server.mjs'], { cwd: dir, env: { ...process.env, CODEX_BIN: mock, READING_SPACES: '1',
+  server = spawn(process.execPath, ['server.mjs'], { cwd: dir, env: { ...process.env, AI_PROVIDER: 'codex', CODEX_BIN: mock, READING_SPACES: '1',
     CODEX_MODEL: 'gpt-6.1-sol', CODEX_REASONING_EFFORT: 'medium', VERCEL: '0', STORAGE_PROVIDER: 'local', APP_PASSWORD: '', PORT: String(port), TEST_DIR: dir }, stdio: 'ignore' });
   await until(() => fetch(url + '/api/health').then(r => r.ok, () => false));
   const request = (route, space, method = 'GET', body) => fetch(url + route, { method,

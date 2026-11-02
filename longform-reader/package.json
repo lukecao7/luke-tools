@@ -23,7 +23,8 @@
     "test:reading-layout": "node tests/reading-layout.mjs && node tests/translation-presentation.mjs && node tests/pdf-math.mjs",
     "test:reader-controls": "node tests/reader-controls.mjs",
     "test:evidence-digest": "node tests/evidence-digest.mjs",
-    "test:local-cli": "node tests/local-cli.mjs && node tests/account-requests.mjs"
+    "test:local-cli": "node tests/local-cli.mjs && node tests/account-requests.mjs",
+    "test:openai": "node tests/openai-api.mjs && node tests/account-requests.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.100",

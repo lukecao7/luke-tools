@@ -1,6 +1,7 @@
 import express from "express";
 import { browserSpaces, workspace, jobKey, accessMiddleware } from "./reading-space.mjs";
 import { existsSync } from "node:fs";
+import { loadEnvFile } from "node:process";
 import multer from "multer";
 import { createCanvas } from "@napi-rs/canvas";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
@@ -21,6 +22,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
+// Load server-only credentials without replacing explicit launch settings.
+try { loadEnvFile(path.join(ROOT, ".env.local")); }
+catch (error) { if (error.code !== "ENOENT") throw error; }
 const PUBLIC_DIR = path.join(ROOT, "public");
 const DATA_DIR = path.join(ROOT, "data");
 const SOURCE_DIR = path.join(DATA_DIR, "sources");
@@ -31,6 +35,12 @@ const PORT = Number(process.env.PORT || 4173);
 const HOST = "127.0.0.1";
 const IS_VERCEL = process.env.VERCEL === "1";
 const USE_CLOUD_STORAGE = IS_VERCEL || process.env.STORAGE_PROVIDER === "blob";
+const AI_PROVIDER = process.env.AI_PROVIDER || "openai";
+if (!["openai", "codex"].includes(AI_PROVIDER)) throw new Error("AI_PROVIDER 必须为 openai 或 codex");
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-6.1-sol";
+const OPENAI_REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || "medium";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY?.trim() || "";
+const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
 const CODEX_MODEL = process.env.CODEX_MODEL || "gpt-6.1-sol";
 const bundledCodex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex";
 const CODEX_BIN = process.env.CODEX_BIN || (process.platform === "darwin" && existsSync(bundledCodex) ? bundledCodex : "codex");
@@ -701,8 +711,54 @@ async function runCodex(prompt, schemaName, signal, schemaOverride) {
 }
 
 async function runAI(prompt, schemaName, signal, schemaOverride) {
-  if (IS_VERCEL) throw Object.assign(new Error("模型处理需要在本地电脑运行，请使用本地版。"), { code: "LOCAL_CLI_REQUIRED", status: 503 });
-  return runCodex(prompt, schemaName, signal, schemaOverride);
+  if (IS_VERCEL) throw Object.assign(new Error("模型处理需要在本地电脑运行，请使用本地版。"), { code: "LOCAL_SERVICE_REQUIRED", status: 503 });
+  // The CLI is an explicit rollback option only. Never spend subscription
+  // quota silently when the API key is missing or an API request fails.
+  if (AI_PROVIDER === "codex") return runCodex(prompt, schemaName, signal, schemaOverride);
+  signal?.throwIfAborted();
+  if (!OPENAI_API_KEY) throw Object.assign(new Error("尚未配置 OpenAI API Key，请在本机 .env.local 中设置 OPENAI_API_KEY 后重启服务。"), { code: "OPENAI_KEY_REQUIRED", status: 503 });
+  const schema = schemaOverride || JSON.parse(await readFile(path.join(SCHEMA_DIR, schemaName), "utf8"));
+  const timeout = AbortSignal.timeout(5 * 60 * 1000);
+  const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
+  try {
+    const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        reasoning: { effort: OPENAI_REASONING_EFFORT },
+        service_tier: "default",
+        store: false,
+        max_output_tokens: 32768,
+        input: [{ role: "user", content: prompt }],
+        text: { format: { type: "json_schema", name: schemaName.replace(/[^a-zA-Z0-9_-]/g, "_"), strict: true, schema } },
+      }),
+      signal: requestSignal,
+    });
+    const result = await response.json().catch(() => null);
+    signal?.throwIfAborted();
+    if (!response.ok) {
+      const code = result?.error?.code || "OPENAI_API_ERROR";
+      const messages = {
+        credit_balance_exhausted: "OpenAI API 额度已用完或已到期，请检查 Personal 组织的赠送额度。",
+        insufficient_quota: "OpenAI API 暂无可用额度，请先领取额度并检查所属组织。",
+        invalid_api_key: "OpenAI API Key 无效，请检查本机配置。",
+      };
+      const detail = String(result?.error?.message || response.statusText).replaceAll(OPENAI_API_KEY, "[redacted]").slice(0, 500);
+      throw Object.assign(new Error(messages[code] || `OpenAI API 请求失败（${response.status}）：${detail}`), { code, status: response.status >= 500 ? 502 : response.status });
+    }
+    if (result?.status !== "completed") throw new Error(`OpenAI 未返回完整结果：${result?.incomplete_details?.reason || result?.error?.code || result?.status || "空响应"}`);
+    const content = (result.output || []).filter(item => item.type === "message").flatMap(item => item.content || []);
+    if (content.some(item => item.type === "refusal")) throw new Error("模型无法处理这段内容，请调整选文后重试。");
+    const output = content.filter(item => item.type === "output_text").map(item => item.text).join("");
+    if (!output) throw new Error("OpenAI 没有返回可读取的结果，请重试。");
+    try { return JSON.parse(output); }
+    catch { throw new Error("OpenAI 返回的结果格式无效，请重试。"); }
+  } catch (error) {
+    signal?.throwIfAborted();
+    if (timeout.aborted) throw new Error("OpenAI API 处理超时，请重试。");
+    throw error;
+  }
 }
 
 async function refineEvidence(task, signal) {
@@ -1127,13 +1183,13 @@ function validateHighlightRanges(ranges, textLength) {
 }
 
 app.get("/api/health", (_request, response) => {
-  const probe = IS_VERCEL ? null : spawnSync(CODEX_BIN, ["--version"], { encoding: "utf8", timeout: 5000 });
+  const probe = !IS_VERCEL && AI_PROVIDER === "codex" ? spawnSync(CODEX_BIN, ["--version"], { encoding: "utf8", timeout: 5000 }) : null;
   response.json({
-    ok: true, online: IS_VERCEL, provider: "codex", model: CODEX_MODEL,
-    reasoningEffort: CODEX_REASONING_EFFORT, serviceTier: CODEX_SERVICE_TIER,
-    cliVersion: (probe?.stdout || "").trim(),
+    ok: true, online: IS_VERCEL, provider: AI_PROVIDER, model: AI_PROVIDER === "openai" ? OPENAI_MODEL : CODEX_MODEL,
+    reasoningEffort: AI_PROVIDER === "openai" ? OPENAI_REASONING_EFFORT : CODEX_REASONING_EFFORT, serviceTier: "default",
+    ...(AI_PROVIDER === "codex" ? { cliVersion: (probe?.stdout || "").trim() } : {}),
     storage: USE_CLOUD_STORAGE ? "private-blob" : "local", ocr: ocrProvider(),
-    available: probe?.status === 0, browserSpaces,
+    available: !IS_VERCEL && (AI_PROVIDER === "openai" ? Boolean(OPENAI_API_KEY) : probe?.status === 0), browserSpaces,
     uploadLimitMB: IS_VERCEL ? 4 : 25,
   });
 });
