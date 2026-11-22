@@ -8,6 +8,7 @@
 | `stay-aware/` | 别刷忘了 v1.6.3：B 站、小红书和 YouTube 浏览时长提醒 | [使用说明](stay-aware/使用说明.md) |
 | `buffett-letters/` | 伯克希尔股东信、投资案例资料和站点构建脚本 | [项目说明](buffett-letters/README.md) |
 | `pdf-merger/` | PDF 合并：排序、合并和添加书签，附带下载脚本 | [使用说明](pdf-merger/README.md) |
+| `room-planner/` | 房间规划：按实测尺寸摆放家具、标注插座，内含可独立编辑的房间布局 | [在线使用](https://lukecao7.github.io/luke-tools/room-planner/) · [布局与说明](room-planner/README.md) |
 
 各工具分别运行，不共享安装依赖。长文伴读可双击 `longform-reader/启动长文伴读.command`；浏览器插件在 Chrome 扩展管理页加载 `stay-aware/` 文件夹。
 

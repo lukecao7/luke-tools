@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>房间布局规划 — Room Planner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-panel="canvas">
+  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="icon-brand" viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Z" fill="white" stroke="none"/><path d="M3.7 11.6v5.9l6.7 3.7v-6.1m3.2 6.1 6.7-3.7v-5.9" /></symbol>
+      <symbol id="icon-layers" viewBox="0 0 24 24"><path d="m3 7 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 17l9 5 9-5"/></symbol>
+      <symbol id="icon-library" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+      <symbol id="icon-canvas" viewBox="0 0 24 24"><path d="M3 9V4h5m8 0h5v5m0 6v5h-5M8 20H3v-5"/><rect x="8" y="8" width="8" height="8" rx="1.6"/></symbol>
+      <symbol id="icon-inspect" viewBox="0 0 24 24"><path d="M4 6h6m5 0h5M4 12h10m5 0h1M4 18h2m5 0h9"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
+      <symbol id="icon-export" viewBox="0 0 24 24"><path d="M12 14V3m-4 4 4-4 4 4M6 10H4v10h16V10h-2"/></symbol>
+      <symbol id="icon-save" viewBox="0 0 24 24"><path d="M12 3v11m-4-4 4 4 4-4M4 16v4h16v-4"/></symbol>
+      <symbol id="icon-import" viewBox="0 0 24 24"><path d="M3 8V5h7l2 3h8v11H3V8Z"/><path d="M8.5 13h7m-3-3 3 3-3 3"/></symbol>
+      <symbol id="icon-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="icon-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="icon-keyboard" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.1m3.9 0h.1m3.9 0h.1m3.9 0h.1M6 12h.1m3.9 0h.1m3.9 0h.1m3.9 0h.1M8 15h8"/></symbol></defs></svg>
+  <div class="app-shell">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="app-icon"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-brand"></use></svg></span>
+        <div><h1 class="brand-name">房间规划</h1><p class="gesture-hint">轻点空白处添加，按住物品拖动</p></div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="btnUndo" title="撤销 (⌘Z)" disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 6.5L3 10l3.5 3.5"></path>
+            <path d="M3.5 10h9a4 4 0 1 1 0 8h-1.5"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnRedo" title="重做 (⇧⌘Z)" disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13.5 6.5L17 10l-3.5 3.5"></path>
+            <path d="M16.5 10h-9a4 4 0 1 0 0 8H9"></path>
+          </svg>
+        </button>
+
+        <div class="divider-v"></div>
+
+        <details id="moreMenu" class="more-menu">
+          <summary class="icon-btn" aria-label="更多操作" title="更多操作"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" style="fill:currentColor;stroke:none"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+          </summary>
+          <div class="menu-popover">        <button class="btn btn-subtle" id="btnImportJson" title="导入 JSON 项目文件"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-import"></use></svg>
+          <span>导入方案</span>
+          </button>
+        <button class="btn btn-subtle" id="btnExportJson" title="保存为 JSON 项目文件"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-save"></use></svg>
+          <span>存为文件</span>
+          </button>
+<hr>
+          <button type="button" data-open="list"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-library"></use></svg>物品与插座清单</button>
+          <button type="button" data-open="summary"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-layers"></use></svg>方案概览与命名</button>
+          <button type="button" data-open="settings"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-inspect"></use></svg>画布设置</button>
+          <hr>
+          <button type="button" class="tool-btn" data-tool="draw-item"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-canvas"></use></svg>框选绘制物品</button>
+          </div>
+          </details>
+        <button class="btn btn-primary" aria-label="导出图片" id="btnExportPng" title="导出高清布局图"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-export"></use></svg><span>导出图片</span></button>
+      </div>
+    </header>
+
+    <!-- 户型画布与按需展开的操作面板 -->
+    <main class="workspace">
+
+      <!-- 中央交互画布 -->
+      <div class="drawing-card">
+        <section class="canvas-stage" id="canvasStage" aria-label="户型画布">
+        <button class="drawing-options" data-open="settings" aria-label="画布设置" title="画布设置"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-inspect"></use></svg></button>
+        <!-- 顶部模式提示条 -->
+        <div class="mode-banner hidden" id="modeBanner">
+          <span class="mode-banner-text" id="modeBannerText"></span>
+          <button class="btn btn-subtle btn-xs" id="btnCancelMode" type="button">完成</button>
+        </div>
+
+        <!-- SVG 矢量画布 -->
+        <svg id="canvasSvg" class="canvas-svg" tabindex="0" aria-label="布局图，轻点空白处添加物品或插座" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- 可单独编辑的家具和厨卫设备俯视图 -->
+            <symbol id="piece-bed" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="5"/>
+              <rect x="3" y="4" width="94" height="92" rx="5" fill="#FFFEFA"/>
+              <rect x="7" y="7" width="40" height="17" rx="5"/>
+              <rect x="53" y="7" width="40" height="17" rx="5"/>
+              <path d="M4 31 Q18 28 34 31 T66 31 T96 30 V93 Q96 98 91 98 H9 Q4 98 4 93Z"/>
+              <path d="M5 39 Q24 36 43 39 T76 39 L95 38" fill="none" opacity=".65"/>
+              <path d="M7 93 Q28 90 53 93 T93 92" fill="none" opacity=".38"/>
+            </symbol>
+            <symbol id="piece-rug" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="2" fill="#E2DDD1" stroke="none"/>
+              <rect x="2" y="2" width="96" height="96" rx="2" fill-opacity=".65" stroke-opacity=".45"/>
+              <rect x="5" y="5" width="90" height="90" rx="1" fill="none" stroke-dasharray="1 2.8" opacity=".42"/>
+            </symbol>
+            <symbol id="piece-desk" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="4"/>
+              <rect x="4" y="5" width="92" height="86" rx="3" fill="#FFF" fill-opacity=".28" stroke="none"/>
+              <path d="M5 90h90" fill="none" opacity=".4"/>
+            </symbol>
+            <symbol id="piece-chair" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="7" y="8" width="86" height="88" rx="15"/>
+              <rect x="13" y="26" width="74" height="64" rx="12" fill="#FFF" fill-opacity=".4"/>
+              <rect x="5" y="4" width="90" height="18" rx="8"/>
+            </symbol>
+            <symbol id="piece-nightstand" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="2" y="2" width="96" height="96" rx="6"/>
+              <path d="M5 78h90 M40 87h20" fill="none"/>
+            </symbol>
+            <symbol id="piece-wardrobe" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="3"/>
+              <path d="M50 3v94 M46 44v11 M54 44v11" fill="none"/>
+              <path d="M3 89h94" fill="none" opacity=".5"/>
+            </symbol>
+            <symbol id="piece-sofa" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="2" y="3" width="96" height="94" rx="13"/>
+              <rect x="8" y="10" width="84" height="25" rx="8"/>
+              <rect x="12" y="38" width="37" height="50" rx="8" fill="#fff" fill-opacity=".37"/>
+              <rect x="51" y="38" width="37" height="50" rx="8" fill="#fff" fill-opacity=".37"/>
+              <rect x="2" y="27" width="10" height="68" rx="5"/>
+              <rect x="88" y="27" width="10" height="68" rx="5"/>
+              <path d="m17 43 13-5 6 10-14 7z" fill="#FFF" fill-opacity=".65"/>
+            </symbol>
+            <symbol id="piece-roundTable" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <ellipse cx="50" cy="50" rx="48" ry="48"/>
+              <ellipse cx="50" cy="50" rx="43" ry="43" fill="#FFF" fill-opacity=".24" stroke="none"/>
+            </symbol>
+            <symbol id="piece-cabinet" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="4"/>
+              <path d="M50 4v91 M6 84h88" fill="none" opacity=".65"/>
+            </symbol>
+            <symbol id="piece-fridge" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="2" y="1" width="96" height="98" rx="5"/>
+              <rect x="7" y="6" width="86" height="82" rx="3" fill="#FFF" fill-opacity=".56" stroke="none"/>
+              <path d="M5 72h90 M18 80h25" fill="none"/>
+            </symbol>
+            <symbol id="piece-shelf" viewBox="0 0 120 40" preserveAspectRatio="none">
+              <rect x="1" y="1" width="118" height="38" rx="2"/>
+              <path d="M5 5h110v30H5z M42 5v30 M78 5v30" fill="none" stroke-opacity=".55"/>
+            </symbol>
+            <symbol id="piece-lamp" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <circle cx="50" cy="50" r="45" fill="#fff6d9"/>
+              <circle cx="50" cy="50" r="33" fill-opacity=".85"/>
+              <circle cx="50" cy="50" r="6"/>
+            </symbol>
+            <symbol id="piece-counter" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="2"/>
+              <rect x="3" y="3" width="94" height="92" fill="#fff" fill-opacity=".6" stroke="none"/>
+            </symbol>
+            <symbol id="piece-counterL" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M46 1H99V99H1V84H46Z"/>
+              <path d="M49 4h47v91H5v-8h44Z" fill="#fff" fill-opacity=".61" stroke="none"/>
+            </symbol>
+            <symbol id="piece-basin" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="4"/>
+              <rect x="17" y="16" width="66" height="66" rx="9" fill="#fbfdff"/>
+              <path d="M50 9v23" fill="none" stroke-width="4"/>
+              <circle cx="50" cy="53" r="3"/>
+            </symbol>
+            <symbol id="piece-toilet" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <ellipse cx="50" cy="43" rx="41" ry="39"/>
+              <ellipse cx="50" cy="40" rx="30" ry="29" fill="#fcfdff"/>
+              <rect x="3" y="74" width="94" height="24" rx="4"/>
+            </symbol>
+            <symbol id="piece-shower" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" fill-opacity=".29" stroke="none"/>
+              <path d="M2 99V2h97" fill="none" stroke-width="2.5"/>
+              <path d="m51 18 17-12m-13 16 16-12" fill="none" opacity=".48"/>
+            </symbol>
+            <symbol id="piece-sink" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="5"/>
+              <rect x="8" y="8" width="84" height="84" rx="9" fill="#f6fafc"/>
+              <circle cx="52" cy="50" r="3"/>
+              <path d="M95 50H66" fill="none" stroke-width="4"/>
+            </symbol>
+            <symbol id="piece-appliance" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="1" y="1" width="98" height="98" rx="5"/>
+              <rect x="7" y="6" width="86" height="74" rx="6" fill="#fff" fill-opacity=".56"/>
+              <path d="M8 88h53" fill="none"/>
+              <circle cx="80" cy="89" r="3"/>
+            </symbol>
+            <symbol id="piece-hob" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="2" y="2" width="96" height="96" rx="4"/>
+              <circle cx="50" cy="53" r="28" fill="none" stroke-width="4"/>
+              <circle cx="50" cy="53" r="13" fill="none"/>
+              <path d="M13 13h37" fill="none"/>
+            </symbol>
+            <symbol id="piece-spray" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M50 97V49" fill="none" stroke-width="8"/>
+              <ellipse cx="50" cy="29" rx="40" ry="24" fill="#fcfdff"/>
+            </symbol>
+            <symbol id="piece-drain" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <rect x="4" y="4" width="92" height="92" rx="7"/>
+              <path d="m15 15 70 70m0-70L15 85" stroke-width="6"/>
+            </symbol>
+
+            <!-- 建筑图纸网格 -->
+            <pattern id="gridPatternSmall" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="1.2" fill="#8196B0" opacity=".40" />
+            </pattern>
+            <pattern id="gridPatternLarge" width="100" height="100" patternUnits="userSpaceOnUse">
+              <rect width="100" height="100" fill="url(#gridPatternSmall)" />
+              <circle cx="1" cy="1" r="1.35" fill="#7F93AB" opacity=".65" />
+            </pattern>
+
+            <!-- 卧室浅橡木地板纹理 -->
+            <pattern id="woodPattern" width="90" height="18" patternUnits="userSpaceOnUse">
+              <rect width="90" height="18" fill="#EBDFC9" />
+              <rect x="0" y="0" width="45" height="9" fill="#FFF5DA" opacity=".18" />
+              <rect x="16" y="9" width="58" height="9" fill="#B59975" opacity=".07" />
+              <path d="M 0 18 L 90 18 M 45 0 L 45 9 M 15 9 L 15 18 M 75 9 L 75 18 M 0 9 L 90 9" fill="none" stroke="#DACBB3" stroke-width="0.7" />
+            </pattern>
+
+            <!-- 客餐厅柔砂石材地砖 -->
+            <pattern id="stonePattern" width="60" height="60" patternUnits="userSpaceOnUse">
+              <rect width="60" height="60" fill="#F3F0E8" />
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#E2DECF" stroke-width="0.7" />
+            </pattern>
+
+            <!-- 卫生间浅青雾面瓷砖 -->
+            <pattern id="bathTilePattern" width="24" height="24" patternUnits="userSpaceOnUse">
+              <rect width="24" height="24" fill="#D6E8ED" />
+              <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#C0D9DE" stroke-width="0.65" />
+            </pattern>
+
+            <!-- 阳台灰绿色砖纹 -->
+            <pattern id="balconyPattern" width="30" height="30" patternUnits="userSpaceOnUse">
+              <rect width="30" height="30" fill="#DFE6DC" />
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#CFD8C9" stroke-width="0.65" />
+            </pattern>
+
+            <pattern id="bayStone" width="12" height="12" patternUnits="userSpaceOnUse">
+              <rect width="12" height="12" fill="#E8EBEB"/>
+              <path d="M-3 3l6-6 M0 12L12 0 M9 15l6-6" fill="none" stroke="#CBD2D4" stroke-width=".8"/>
+            </pattern>
+            <!-- 管道井斜纹阴影 -->
+            <pattern id="shaftHatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="10" height="10" fill="#D5D8DC" />
+              <line x1="0" y1="0" x2="0" y2="10" stroke="#A7AEB5" stroke-width="1.4" />
+            </pattern>
+
+            <!-- 平面图柔和外投影 -->
+            <filter id="planShadow" x="-8%" y="-8%" width="116%" height="116%">
+              <feDropShadow dx="0" dy="8" stdDeviation="13" flood-color="#58483B" flood-opacity="0.18" />
+            </filter>
+
+            <filter id="wallShadow" x="-5%" y="-5%" width="110%" height="110%">
+              <feDropShadow dx="2.6" dy="3.8" stdDeviation="3" flood-color="#4C4436" flood-opacity=".24"/>
+            </filter>
+
+            <!-- 家具卡片柔和阴影 -->
+            <filter id="itemShadow" x="-15%" y="-15%" width="130%" height="130%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1E2022" flood-opacity="0.12" />
+            </filter>
+          </defs>
+
+          <g id="viewportGroup">
+            <!-- 无限图纸底板 -->
+            <rect id="infiniteGrid" x="-5000" y="-5000" width="10000" height="10000" fill="url(#gridPatternLarge)" />
+            <!-- 精绘矢量户型图层 / 自定义图片底图层 -->
+            <g id="dimensionLayer" pointer-events="none" aria-hidden="true"></g>
+            <g id="floorplanLayer"></g>
+            <!-- 设备与家具层 -->
+            <g id="itemsLayer"></g>
+            <!-- 墙面插孔层 -->
+            <g id="outletsLayer"></g>
+            <!-- 辅助线、连线、测距、校准、框选叠加层 -->
+            <g id="overlayLayer"></g>
+            <g id="placementLayer" pointer-events="none"></g>
+          </g>
+        </svg>
+
+        <div class="floating-actions hidden" id="floatingActions" role="group" aria-label="在此添加">
+          <button class="float-btn float-btn-primary" id="addPointItem" type="button">方形物品</button>
+          <button class="float-btn" id="addPointOutlet" type="button">插座</button>
+          <button class="float-btn" id="addPointMore" type="button" aria-label="更多添加选项">更多</button>
+        </div>
+
+        <div class="canvas-tools">
+          <div class="plan-dock" role="toolbar" aria-label="方案与画布工具">
+            <details class="plan-picker" id="planSwitcher">
+              <summary title="切换或管理方案" aria-label="切换或管理方案">
+                <span class="plan-cover" aria-hidden="true">
+                  <svg id="planThumbnail" viewBox="-75 -68 840 966"><use href="#floorplanLayer"></use><use href="#itemsLayer"></use></svg>
+                </span>
+                <span class="dock-meta"><strong id="dockPlanName"></strong><small id="dockCounts"></small></span>
+                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-chevron"></use></svg>
+              </summary>
+              <div class="plan-popover">
+                <div class="plan-tabs" id="planTabs" role="tablist" aria-label="布局方案"></div>
+                <button id="btnDuplicatePlan" type="button"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-add"></use></svg>复制当前方案</button>
+                <button type="button" data-open="list"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-library"></use></svg>物品与插座清单</button>
+              </div>
+            </details>
+            <span class="dock-divider"></span>
+            <button type="button" class="add-tool" id="btnAddHere"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-add"></use></svg>添加</button>
+            <button type="button" class="tool-btn measure-tool" data-tool="measure" aria-label="测距" title="测距 (M)">
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16.4 16.4 3 21 7.6 7.6 21 3 16.4Z"/><path d="m8 12 2.2 2.2m1-5.4 2.2 2.2m1-5.4 2.2 2.2"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- 底部浮动控制条 -->
+        <div class="canvas-hud">
+          <div class="hud-group scale-group">
+            <div class="scale-bar-wrap" title="当前画布比例尺">
+              <div class="scale-bar-line" id="scaleBarLine"></div>
+              <span class="scale-bar-label" id="scaleBarLabel">100 cm</span>
+            </div>
+          </div>
+
+          <div class="hud-group">
+            <button class="hud-btn" id="btnZoomOut" title="缩小 (-)">−</button>
+            <span class="hud-zoom-val" id="zoomLabel">100%</span>
+            <button class="hud-btn" id="btnZoomIn" title="放大 (+)">+</button>
+            <button class="hud-btn" id="btnFitView" title="居中适配画面 (0)">适配</button>
+          </div>
+        </div>
+
+        <!-- 拖拽底图覆盖层 -->
+        <div class="drop-overlay hidden" id="dropOverlay">
+          <div class="drop-overlay-box">松开鼠标，替换为自定义房间底图</div>
+        </div>
+        </section>
+      </div>
+
+      <aside class="context-sheet" id="contextSheet" aria-label="操作面板" inert>
+        <header class="sheet-head">
+          <div>
+          <h2 id="sheetTitle" tabindex="-1"></h2>
+          <p id="sheetSub"></p>
+          </div>
+          <button type="button" class="link-btn multi-toggle" id="multiToggle" aria-label="多选物品">多选</button>
+          <button class="sheet-close" id="closeSheet" title="关闭" aria-label="关闭"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#icon-close"></use></svg><span>完成</span>
+          </button>
+          </header>
+        <div class="multi-actions">
+          <span id="multiCount" role="status">已选 0 件</span>
+          <button type="button" class="btn btn-danger-subtle btn-sm" id="deleteSelectedItems" disabled>删除所选</button>
+        </div>
+        <div class="sheet-scroller">
+          <div class="sheet-body" data-content="detail">
+            <dl class="selection-facts" id="selectionFacts"></dl>
+            <button type="button" class="btn btn-primary btn-block" id="editSelection">编辑</button>
+          </div>
+          <div class="sheet-body" data-content="add">
+            <div class="quick-add-grid">
+              <button class="quick-card" id="quickItem">
+          <span class="object-preview" aria-hidden="true"></span>
+          <strong>方形物品</strong>
+          <small>60 × 60 cm</small>
+          </button>
+              <button class="quick-card" id="quickOutlet">
+          <span class="socket-preview" aria-hidden="true"><i></i><b></b></span>
+          <strong>插座</strong>
+          <small>五孔插座</small>
+          </button>
+            </div>
+            <details class="advanced">
+          <summary>按尺寸添加物品</summary>
+          <div class="advanced-body">
+          <button class="link-btn" id="btnToggleAreaMode" type="button">按面积算</button><form id="addItemForm" class="compact-form">
+              <div class="field">
+                <label for="newItemName">名称</label>
+                <input id="newItemName" type="text" placeholder="如：书桌、衣柜" />
+              </div>
+
+              <!-- 长宽模式 -->
+              <div class="field-row" id="dimInputRow">
+                <div class="field">
+                  <label for="newItemW">宽 (cm)</label>
+                  <input id="newItemW" type="number" min="5" max="2000" step="1" value="60" required />
+                </div>
+                <div class="field-x">×</div>
+                <div class="field">
+                  <label for="newItemD">深 (cm)</label>
+                  <input id="newItemD" type="number" min="5" max="2000" step="1" value="60" required />
+                </div>
+              </div>
+
+              <!-- 面积反推模式（默认隐藏） -->
+              <div class="field-row hidden" id="areaInputRow">
+                <div class="field">
+                  <label for="newItemArea">面积 (㎡)</label>
+                  <input id="newItemArea" type="number" min="0.01" max="100" step="any" value="1" disabled />
+                </div>
+                <div class="field">
+                  <label for="newItemRatio">长宽比</label>
+                  <select id="newItemRatio" disabled>
+                    <option value="1">正方形 (1:1)</option>
+                    <option value="1.5">常见矩形 (3:2)</option>
+                    <option value="2" selected>长条形 (2:1)</option>
+                    <option value="0.5">竖条形 (1:2)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="area-preview" id="newItemAreaPreview">占地面积：0.36 ㎡（60 × 60 cm）</div>
+
+              <div class="field-inline">
+                <span class="field-label">色块</span>
+                <div class="color-swatches" id="newItemColors"></div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">放到画布</button>
+            </form></div></details>
+            <details class="advanced">
+          <summary>选择其他插孔类型</summary>
+          <div class="advanced-body">
+          <div class="outlet-type-grid" id="outletTypeGrid">
+          </div>
+          <button class="btn btn-primary btn-block" type="button" id="btnStartPlaceOutlet">添加到此处</button>
+          </div>
+          </details>
+            <details class="advanced">
+          <summary>常用家具</summary>
+          <div class="preset-grid" id="presetGrid">
+          </div>
+          </details>
+          </div>
+          <div class="sheet-body" data-content="list">
+          <section class="panel-section section-grow">
+            <div class="section-header">
+              <h3>已放置物品 <span class="badge" id="itemCountBadge">0</span></h3>
+              <span class="muted-hint" id="totalAreaSummary">0 ㎡</span>
+            </div>
+            <div class="entity-list" id="itemList">
+          </div>
+          </section>
+          <section class="panel-section section-grow outlet-section">
+            <div class="section-header">
+              <h3>墙面插孔列表 <span class="badge" id="outletCountBadge">0</span></h3>
+            </div>
+            <div class="entity-list" id="outletList">
+          </div>
+          </section>
+          </div>
+          <div class="sheet-body" data-content="inspect" id="inspectorPanel">
+          </div>
+          <div class="sheet-body" data-content="settings" id="pane-floorplan">
+          <section class="panel-section">
+            <div class="section-header">
+              <h3>当前户型模式</h3>
+            </div>
+            <div class="mode-switch-row">
+              <button class="btn btn-sm mode-pill active" id="btnModeVector" type="button">精绘矢量户型</button>
+              <button class="btn btn-sm mode-pill" id="btnModeImage" type="button">自定义底图</button>
+            </div>
+
+            <!-- 矢量户型控制 -->
+            <div id="vectorControls" class="sub-panel">
+              <div class="info-card"><div class="info-card-title">户型外框</div><div class="info-card-sub">6.91 × 8.30 m</div></div>
+              <label class="toggle-row">
+                <input type="checkbox" id="toggleFixtures" checked />
+                <span>显示固定厨卫设施（台盆/马桶/淋浴/橱柜）</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="toggleDoorSwings" checked />
+                <span>显示开门弧线（防家具挡门）</span>
+              </label>
+              <label class="toggle-row">
+                <input type="checkbox" id="toggleFloorTexture" checked />
+                <span>显示木纹与地砖底纹</span>
+              </label>
+            </div>
+
+            <!-- 自定义图片底图控制 -->
+            <div id="imageModePanel" class="sub-panel hidden">
+              <div class="dropzone" id="floorplanDropzone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <path d="M21 15l-5-5L5 21"></path>
+                </svg>
+                <div class="dropzone-title">点击上传、拖入或 ⌘V 粘贴</div>
+                <div class="dropzone-sub">支持 JPG / PNG / WebP 户型图</div>
+                <input type="file" id="floorplanFileInput" accept="image/*" hidden />
+              </div>
+
+              <div class="bg-controls hidden" id="bgControls">
+                <div class="scale-status-card" id="scaleStatusCard">
+                  <div class="scale-status-row">
+                    <span class="scale-dot" id="scaleDot"></span>
+                    <span id="scaleStatusText">尚未校准比例尺</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" id="btnCalibrateFromPanel" type="button">去画布校准</button>
+                </div>
+
+                <div class="field">
+                  <div class="field-label-row">
+                    <label for="bgOpacity">底图透明度</label>
+                    <span class="mono-val" id="bgOpacityVal">75%</span>
+                  </div>
+                  <input id="bgOpacity" type="range" min="10" max="100" value="75" />
+                </div>
+
+                <div class="btn-row">
+                  <button class="btn btn-subtle btn-sm" id="btnRotateBg" type="button">旋转底图 90°</button>
+                  <button class="btn btn-danger-subtle btn-sm" id="btnRemoveBg" type="button">移除底图</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-header">
+              <h3>画布辅助</h3>
+            </div>
+                      <div class="drawing-settings"><div class="hud-group">
+            <label class="hud-select-label" for="snapSelect">吸附</label>
+            <select id="snapSelect" class="hud-select">
+              <option value="0">关闭</option>
+              <option value="1">1 cm</option>
+              <option value="5" selected>5 cm</option>
+              <option value="10">10 cm</option>
+            </select>
+            <div class="hud-sep"></div>
+            <label class="hud-checkbox" title="选中设备时，自动连线标出到最近电源插座的距离">
+              <input type="checkbox" id="togglePowerLine" checked />
+              <span>插座测距线</span>
+            </label>
+          </div></div>
+<details class="advanced danger-zone"><summary>清理数据</summary><div class="btn-col">
+              <button class="btn btn-danger-subtle btn-block" id="btnClearItems" type="button">清空当前方案设备</button>
+              <button class="btn btn-danger-subtle btn-block" id="btnClearAll" type="button">重置全部数据</button>
+            </div></details>
+          </section>
+        </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 校准比例尺弹窗 -->
+  <div class="modal-backdrop hidden" id="calibrateModal">
+    <div class="modal-card">
+      <h3>校准底图比例尺</h3>
+      <p class="modal-desc">请输入你刚才在底图上所画线段对应的真实长度，系统将据此把所有家具精确按比例显示。</p>
+      <form id="calibrateForm" class="compact-form">
+        <div class="field-row">
+          <div class="field" style="flex: 2;">
+            <label for="calibrateLength">实际长度</label>
+            <input id="calibrateLength" type="number" min="1" max="50000" step="0.1" value="360" required />
+          </div>
+          <div class="field" style="flex: 1;">
+            <label for="calibrateUnit">单位</label>
+            <select id="calibrateUnit">
+              <option value="cm" selected>厘米 (cm)</option>
+              <option value="m">米 (m)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-subtle" id="btnCancelCalibrate">取消</button>
+          <button type="submit" class="btn btn-primary">应用比例尺</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 重命名/删除方案弹窗 -->
+  <div class="modal-backdrop hidden" id="planModal">
+    <div class="modal-card">
+      <h3>编辑方案名称</h3>
+      <form id="planForm" class="compact-form">
+        <div class="field">
+          <label for="planNameInput">方案名称</label>
+          <input id="planNameInput" type="text" maxlength="24" required />
+        </div>
+        <div class="modal-actions modal-actions-split">
+          <button type="button" class="btn btn-danger-subtle" id="btnDeletePlan">删除此方案</button>
+          <div class="btn-row">
+            <button type="button" class="btn btn-subtle" id="btnCancelPlanModal">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 隐藏的 JSON 导入输入 -->
+  <input type="file" id="jsonFileInput" accept=".json,application/json" hidden />
+
+  <!-- Toast 轻提示 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- 分享方案内嵌一份，双击本地 HTML 时也能载入。 -->
+  <script type="application/json" id="sharedRoomLayout">{"version":2,"floorplanMode":"vector","vectorOptions":{"showFixtures":true,"showDoorSwings":true,"showFloorTexture":true},"background":null,"outlets":[],"plans":[{"id":"plan_mwrj8n5b_yx761","name":"原图布置","editableFixtures":true,"floorplanMode":"vector","items":[{"id":"item_mwrj8n5b_nh1du","rotation":0,"stackable":false,"locked":false,"note":"","name":"厨房操作台","shape":"counter","cx":446.4,"cy":777.2,"width":144,"depth":61,"color":"sand","fixture":true},{"id":"item_mwrj8n5b_fixk2","rotation":0,"stackable":false,"locked":false,"note":"","name":"厨房转角台面","shape":"counterL","cx":614.2,"cy":702.6,"width":109,"depth":130,"color":"sand","fixture":true},{"id":"item_mwrj8n5b_eh68d","rotation":0,"stackable":true,"locked":false,"note":"","name":"淋浴隔断","shape":"shower","cx":544.9,"cy":573.5,"width":88,"depth":142,"color":"sky","fixture":true},{"id":"item_mwrj8n5b_dhlvc","rotation":90,"stackable":false,"locked":false,"note":"","name":"阳台置物架","shape":"desk","cx":275.5,"cy":65,"width":92,"depth":41,"color":"sand","showLabel":true},{"id":"item_mwrj8n5b_y556v","rotation":180,"stackable":false,"locked":false,"note":"","name":"卧室 A 双人床","shape":"bed","cx":90,"cy":317.5,"width":140,"depth":205,"color":"sage"},{"id":"item_mwrj8n5b_r8yd2","rotation":0,"stackable":false,"locked":false,"note":"","name":"卧室 A 床头柜","shape":"nightstand","cx":121,"cy":186.5,"width":46,"depth":43,"color":"sand"},{"id":"item_mwrj8n5b_8xzen","rotation":270,"stackable":false,"locked":false,"note":"","name":"猫架","shape":"wardrobe","cx":570.5,"cy":199.5,"width":105,"depth":45,"color":"sand","showLabel":true},{"id":"item_mwrj8n5b_eb9sg","rotation":0,"stackable":false,"locked":false,"note":"","name":"卧室 B 衣柜","shape":"wardrobe","cx":522.6,"cy":387.4,"width":150,"depth":60,"color":"sand"},{"id":"item_mwrj8n5b_ji38u","rotation":0,"stackable":false,"locked":false,"note":"原图仅画出矩形，暂按矮柜标记。","name":"入户矮柜","shape":"cabinet","cx":98,"cy":790.7,"width":81,"depth":34,"color":"slate"},{"id":"item_mwrj8n5b_kiz2d","rotation":270,"stackable":false,"locked":false,"note":"","name":"冰箱","shape":"fridge","cx":49,"cy":453,"width":50,"depth":60,"color":"slate"},{"id":"item_mwrj8n5b_bmehg","rotation":0,"stackable":false,"locked":false,"note":"","name":"洗手台","shape":"basin","cx":461.6,"cy":451.4,"width":79,"depth":50,"color":"sky","fixture":true},{"id":"item_mwrj8n5b_cmahd","rotation":0,"stackable":false,"locked":false,"note":"","name":"马桶","shape":"toilet","cx":461.1,"cy":608.1,"width":45,"depth":73,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_wptng","rotation":0,"stackable":true,"locked":false,"note":"","name":"厨房水槽","shape":"sink","cx":640,"cy":708.5,"width":48,"depth":43,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_whp2t","rotation":0,"stackable":true,"locked":false,"note":"底部台面上的未标名设备，按外轮廓估算。","name":"厨房嵌入设备","shape":"appliance","cx":483.3,"cy":777.2,"width":61,"depth":52,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_t0unx","rotation":0,"stackable":true,"locked":false,"note":"","name":"单眼灶","shape":"hob","cx":419.4,"cy":780.1,"width":29,"depth":39,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_ll1zk","rotation":0,"stackable":true,"locked":false,"note":"","name":"淋浴花洒","shape":"spray","cx":546.1,"cy":628.7,"width":18,"depth":32,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_0x78w","rotation":0,"stackable":true,"locked":false,"note":"","name":"地漏（左）","shape":"drain","cx":430,"cy":632.8,"width":11,"depth":12,"color":"slate","fixture":true},{"id":"item_mwrj8n5b_pxyix","rotation":0,"stackable":true,"locked":false,"note":"","name":"地漏（右）","shape":"drain","cx":578.4,"cy":631.6,"width":12,"depth":12,"color":"slate","fixture":true},{"id":"item_mwrjqcir_2tr2w","rotation":90,"stackable":false,"locked":false,"note":"","name":"卧室 A 衣柜","shape":"wardrobe","cx":340.9,"cy":196.5,"width":131,"depth":60,"color":"sand"},{"id":"item_mwrjqrm5_903ms","name":"书桌","width":140,"depth":65,"cx":262.5,"cy":205,"rotation":90,"color":"sky","stackable":false,"locked":false,"note":"","showLabel":true},{"id":"item_mwrjt7pq_kwyu2","name":"衣架","width":74,"depth":40,"cx":58,"cy":185,"rotation":0,"color":"sky","stackable":false,"locked":false,"note":"","showLabel":true},{"id":"item_mwrjvbk0_xopbb","name":"衣架","width":85,"depth":45,"cx":181,"cy":590.2,"rotation":0,"color":"sky","stackable":false,"locked":false,"note":"","showLabel":true},{"id":"item_mwrjvn5l_41ahp","name":"衣架","width":100,"depth":45,"cx":280,"cy":608,"rotation":270,"color":"sky","stackable":false,"locked":false,"note":"","showLabel":true},{"id":"item_mwrjvyya_mkto9","rotation":270,"stackable":false,"locked":false,"note":"","name":"置物架（上）","shape":"shelf","width":120,"depth":40,"color":"sand","cx":39,"cy":538},{"id":"item_mwrjvyya_i7n15","rotation":270,"stackable":false,"locked":false,"note":"","name":"置物架（下）","shape":"shelf","width":120,"depth":40,"color":"sand","cx":39,"cy":658},{"id":"item_mwrjxchx_82ck3","name":"多层收纳盒","width":56,"depth":40,"cx":282.5,"cy":687,"rotation":270,"color":"sky","stackable":false,"locked":false,"note":"","showLabel":true}]}],"activePlanId":"plan_mwrj8n5b_yx761","originalLayoutVersion":5,"settings":{"snapCm":5,"showPowerLine":true}}</script>
+  <script src="app.js"></script>
+</body>
+</html>
